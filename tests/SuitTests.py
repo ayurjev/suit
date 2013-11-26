@@ -11,7 +11,7 @@ import json
 import subprocess
 from datetime import datetime
 
-from z9.Suit.Suit import XmlTag, PythonSyntax, JavascriptSyntax, Compiler, Suit, suit, trimSpaces, json_dumps_handler
+from suit.Suit import XmlTag, PythonSyntax, JavascriptSyntax, Compiler, Suit, suit, trimSpaces, json_dumps_handler
 
 
 class SuitTest(unittest.TestCase):
@@ -113,7 +113,7 @@ class SuitTest(unittest.TestCase):
 
         # Получаем результат выполнения скомпилированного js кода
         # Для этого потребуется js-библиотека z9:
-        f = open("../../z9.js")
+        f = open("../Suit.js")
         z9 = "".join(f.readlines())
         f.close()
 
@@ -950,7 +950,7 @@ class SuitTest(unittest.TestCase):
         js_written = "".join(f.readlines())
         f.close()
         expected = '''
-            z9.SuitApi.addTemplate("subfolder.template8", function(data) {
+            suit.SuitApi.addTemplate("subfolder.template8", function(data) {
                 if (data == null) { data = {}; };
                 return "<div id=\\"target\\">some content</div><script src=\\"something\\"></script>"
             }, function() {
@@ -1107,7 +1107,7 @@ class SuitTest(unittest.TestCase):
         js_written = "".join(f.readlines())
         f.close()
         expected = '''
-            z9.SuitApi.addTemplate("subfolder.mainTemplate2", function(data) {
+            suit.SuitApi.addTemplate("subfolder.mainTemplate2", function(data) {
                 if (data == null) { data = {}; };
                 return "<div>main</div>"
             }, function() {
@@ -1137,7 +1137,7 @@ class SuitTest(unittest.TestCase):
         js_written = "".join(f.readlines())
         f.close()
         expected = '''
-            z9.SuitApi.addTemplate("subfolder.templateChild", function(data) {
+            suit.SuitApi.addTemplate("subfolder.templateChild", function(data) {
                 if (data == null) { data = {}; };
                 return "<div>main</div>"
             }, function() {
@@ -1323,12 +1323,12 @@ class SuitTest(unittest.TestCase):
 
         # Теперь проверим содержимое собранного файла:
         expected = '''
-            z9.SuitApi.addTemplate("subfolder.template1",
+            suit.SuitApi.addTemplate("subfolder.template1",
             function(data) { if (data == null) { data = {}; };
-            return "0{0}2".format(z9.SuitRunTime.stringify(z9.SuitRunTime.var(function(){
+            return "0{0}2".format(suit.SuitRunTime.stringify(suit.SuitRunTime.var(function(){
             return data["a"]; }, null))) }, null);
-            z9.SuitApi.addTemplate("subfolder.template2", function(data) { if (data == null) { data = {}; };
-            return "3{0}5".format(z9.SuitRunTime.stringify(z9.SuitRunTime.var(function(){
+            suit.SuitApi.addTemplate("subfolder.template2", function(data) { if (data == null) { data = {}; };
+            return "3{0}5".format(suit.SuitRunTime.stringify(suit.SuitRunTime.var(function(){
             return data["b"]; }, null))) }, null);
         '''
         f = open("views/__js__/all.subfolder.js")

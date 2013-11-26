@@ -494,7 +494,7 @@ class Template(object):
 
         # Compiling python source
         templateName = self.templateName.replace(".html", "").replace("/", "_")
-        pythonSource = "from z9.Suit.Suit import Suit, SuitRunTime, SuitNone, SuitFilters\n" \
+        pythonSource = "from suit.Suit import Suit, SuitRunTime, SuitNone, SuitFilters\n" \
                        "class %s(object):\n" \
                        "\tdef execute(self, data={}):\n" \
                        "\t\tself.data = data\n" \
@@ -516,7 +516,7 @@ class Template(object):
                 return %s()
             }''' % self.js.strip()
 
-        jsSource = '''z9.SuitApi.addTemplate("%s", function(data) {
+        jsSource = '''suit.SuitApi.addTemplate("%s", function(data) {
            if (data == null) { data = {}; };
            return %s
         }, %s);
@@ -699,18 +699,18 @@ class JavascriptSyntax(Syntax):
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
             filters = []
-        res = "z9.SuitRunTime.var(function(){ return data%s; }, %s)" % (
+        res = "suit.SuitRunTime.var(function(){ return data%s; }, %s)" % (
             var_name, default if default is not None else "null"
         )
         for filter_lambda in filters:
             res = filter_lambda(res)
-        return res if without_stringify else "z9.SuitRunTime.stringify(%s)" % res
+        return res if without_stringify else "suit.SuitRunTime.stringify(%s)" % res
 
     def condition(self, condition, true, false):
-        return 'z9.SuitRunTime.opt(%s, function() {return (%s)}, function() {return (%s)})' % (condition, true, false)
+        return 'suit.SuitRunTime.opt(%s, function() {return (%s)}, function() {return (%s)})' % (condition, true, false)
 
     def list(self, template, itervar, iterable):
-        return '''z9.SuitRunTime.list(function(%s) { return %s; }, (%s))''' % (
+        return '''suit.SuitRunTime.list(function(%s) { return %s; }, (%s))''' % (
             itervar, template.replace(".%s)" % itervar, "[%s])" % itervar), iterable)
 
     def expression(self, expression):
@@ -718,24 +718,24 @@ class JavascriptSyntax(Syntax):
 
     def filter(self, filterName, var, data=None):
         if filterName == "length":
-            var = '''z9.SuitFilters.length(%s, %s)''' % (var, var)
+            var = '''suit.SuitFilters.length(%s, %s)''' % (var, var)
         elif filterName == "startswith":
-            var = "z9.SuitFilters.startswith(%s, %s)" % (var, data)
+            var = "suit.SuitFilters.startswith(%s, %s)" % (var, data)
         elif filterName == "in":
-            var = "z9.SuitFilters.inArray(%s, %s)" % (var, data)
+            var = "suit.SuitFilters.inArray(%s, %s)" % (var, data)
         elif filterName == "notin":
-            var = "!z9.SuitFilters.inArray(%s, %s)" % (var, data)
+            var = "!suit.SuitFilters.inArray(%s, %s)" % (var, data)
         elif filterName == "contains":
-            var = "z9.SuitFilters.contains(%s, %s)" % (var, data)
+            var = "suit.SuitFilters.contains(%s, %s)" % (var, data)
         elif filterName == "bool":
-            return "z9.SuitFilters.bool(%s)" % var
+            return "suit.SuitFilters.bool(%s)" % var
         elif filterName == "int":
-            return "z9.SuitFilters.int(%s)" % var
+            return "suit.SuitFilters.int(%s)" % var
         elif filterName == "str":
-            return '''z9.SuitFilters.str(%s)''' % var
+            return '''suit.SuitFilters.str(%s)''' % var
         elif filterName == "dateformat":
-            return '''z9.SuitFilters.dateformat(%s, %s)''' % (var, data)
-        var = "z9.SuitRunTime.stringify(%s)" % var
+            return '''suit.SuitFilters.dateformat(%s, %s)''' % (var, data)
+        var = "suit.SuitRunTime.stringify(%s)" % var
         return var
 
 

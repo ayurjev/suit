@@ -83,9 +83,9 @@ var suit = function() {
     this.get = function(templateName) {
         return {
             "execute": function(data, callback, listenersAction) {
-                return z9.SuitApi.executeTemplate(templateName, data, callback, listenersAction);
+                return suit.SuitApi.executeTemplate(templateName, data, callback, listenersAction);
             },
-            "api": function() { return z9.SuitApi.getTemplateApi(templateName) }
+            "api": function() { return suit.SuitApi.getTemplateApi(templateName) }
         }
     };
 };

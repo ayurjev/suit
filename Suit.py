@@ -821,7 +821,7 @@ class Compiler(object):
         Создает в случае остутствия
 
         """
-        os.chmod("../views/", 0o755)
+        os.chmod("../views/", 0o777)
 
         if os.path.isfile("__init__.py") is False:
             f = open("__init__.py", "w+")

@@ -747,6 +747,7 @@ class Compiler(object):
 
         :param path:    Путь до каталога с шаблонами
         """
+        self._checkCompiledPackage()
         for file in os.listdir(path):
             target = (path + "/" + file) if path != "." else file
             if os.path.isdir(target):
@@ -754,7 +755,6 @@ class Compiler(object):
             elif os.path.isfile(target):
                 if self._isTemplateName(target) is False:
                     continue
-                self._checkCompiledPackage()
                 template = Template(target)
                 template.compile({"py": PythonSyntax, "js": JavascriptSyntax})
 

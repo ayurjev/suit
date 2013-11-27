@@ -829,12 +829,21 @@ class Compiler(object):
 
         if os.path.isdir("__js__") is False:
             os.mkdir("__js__")
+            os.chmod("__js__", 0o777)
 
         if os.path.isdir("__py__") is False:
             os.mkdir("__py__")
+            os.mkdir("__py__/__pycache__")
+            os.chmod("__py__", 0o777)
+            os.chmod("__py__/__pycache__", 0o777)
 
         if os.path.isdir("__css__") is False:
             os.mkdir("__css__")
+            os.chmod("__css__", 0o777)
+
+        if os.path.isdir("__pycache__") is False:
+            os.mkdir("__pycache__")
+            os.chmod("__pycache__", 0o777)
 
         if os.path.isfile("__py__/__init__.py") is False:
             f = open("__py__/__init__.py", "w+")

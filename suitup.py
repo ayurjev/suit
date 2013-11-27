@@ -9,7 +9,7 @@
 
 """
 
-from z9.Suit.Suit import Compiler
+from suit.Suit import Compiler
 
 
 def main():

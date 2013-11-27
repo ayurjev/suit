@@ -821,6 +821,9 @@ class Compiler(object):
         Создает в случае остутствия
 
         """
+        import stat
+        os.chmod("../views/", stat.S_IROTH)
+
         if os.path.isfile("__init__.py") is False:
             f = open("__init__.py", "w+")
             f.close()

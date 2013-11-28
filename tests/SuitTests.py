@@ -9,7 +9,9 @@ import re
 import hashlib
 import json
 import subprocess
-from datetime import datetime
+
+from datetime import datetime, date, time
+
 
 from suit.Suit import XmlTag, PythonSyntax, JavascriptSyntax, Compiler, Suit, suit, trimSpaces, json_dumps_handler
 
@@ -509,7 +511,6 @@ class SuitTest(unittest.TestCase):
         Проверим фильтр для преобразования даты и времени
 
         """
-        from datetime import datetime, date, time
         self.simulate(
             "<var filter='dateformat' dateformat-data='%d.%m.%y'>date</var>", "04.10.13", {"date": date(2013, 10, 4)}
         )
@@ -854,6 +855,25 @@ class SuitTest(unittest.TestCase):
         '''
         self.simulate(template, "1 - Первый!234", {"items": [1, 2, 3, 4]})
         self.simulate(template2, "1234 - Последний!", {"items": [1, 2, 3, 4]})
+
+    def test_filters_on_iteration_variables(self):
+        """
+        Проверка возможности применения фильтров к переменным цикла
+
+        """
+        template = '''
+            <list for="item" in="items">
+                <var filter="length">item</var>
+            </list>
+        '''
+        self.simulate(template, "1234", {"items": [1, 22, 333, 4444]})
+
+        template = '''
+            <list for="date" in="dates">
+                <var filter="dateformat" dateformat-data="%d.%m.%y">date</var>|
+            </list>
+        '''
+        self.simulate(template, "04.10.13|04.11.13|", {"dates": [date(2013, 10, 4), date(2013, 11, 4)]})
 
     #################################### Expressions ###################################
 

@@ -1,5 +1,5 @@
 
-var suit = function() {
+var Suit = function() {
 
     /**
      * Makes a query to the backend with ajax-query
@@ -244,7 +244,7 @@ var SuitApi = function() {
         return null;
     };
 };
-
+suit = new Suit();
 suit.SuitRunTime = new SuitRunTime();
 suit.SuitFilters = new SuitFilters();
 suit.SuitApi = new SuitApi();

@@ -80,7 +80,7 @@ var suit = function() {
      * @param templateName
      * @returns {{execute: Function, api: Function}}
      */
-    this.get = function(templateName) {
+    this.template = function(templateName) {
         return {
             "execute": function(data, callback, listenersAction) {
                 return suit.SuitApi.executeTemplate(templateName, data, callback, listenersAction);
@@ -265,7 +265,7 @@ if (typeof $ !== "undefined") {
         $(".ui-container").each(function() {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
-                var api = suit.get(templateName).api();
+                var api = suit.template(templateName).api();
                 if (api && api.createListeners) {
                     api.createListeners();
                 }

@@ -1074,7 +1074,7 @@ def json_loads_handler(data):
     import re
     from datetime import datetime
     for k, v in data.items():
-        if isinstance(v, str) and re.search("\w\w\w[\s]+\w\w\w[\s]+\d[\s]+\d\d:\d\d:\d\d[\s]+\d\d\d\d", v):
+        if isinstance(v, str) and re.search("\w\w\w[\s]+\w\w\w[\s]+\d[\d]*[\s]+\d\d:\d\d:\d\d[\s]+\d\d\d\d", v):
             try:
                 data[k] = datetime.strptime(v, "%a %b %d %H:%M:%S %Y")
             except Exception as err:

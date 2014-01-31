@@ -438,7 +438,7 @@ class Template(object):
             content = self.content
         content = self.tags_counter.count(content)
         breakpointsMap = {}
-        bps = re.findall('(<breakpoint(?P<brcount>[_\d]*)(?:\s.+?)*>.+?</breakpoint(?P=brcount)>)', content, re.DOTALL)
+        bps = re.findall('(<breakpoint(?P<brcount>[_\d]*)(?:\s.+?)*>.*?</breakpoint(?P=brcount)>)', content, re.DOTALL)
         for bp in bps:
             bp_element = Breakpoint(bp[0])
             if bp_element.get("name"):
@@ -634,7 +634,7 @@ class PythonSyntax(Syntax):
             return ('"' + template + '"').replace("%%", "%")
 
     def convertplaceholders(self, template):
-        return re.sub("\{\{ph:\d\}\}", "%s", template)
+        return re.sub("\{\{ph:\d+\}\}", "%s", template)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -694,7 +694,7 @@ class JavascriptSyntax(Syntax):
             return '"' + template + '"'
 
     def convertplaceholders(self, template):
-        return re.sub('\{\{ph:(\d)\}\}', lambda m: "{%s}" % m.group(1), template)
+        return re.sub('\{\{ph:(\d+)\}\}', lambda m: "{%s}" % m.group(1), template)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:

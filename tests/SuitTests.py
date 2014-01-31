@@ -1062,6 +1062,19 @@ class SuitTest(unittest.TestCase):
         self.simulate(template3, expected3, dataForTemplate3, "template3")
         self.simulate(template4, expected4, dataForTemplate4)
 
+    def test_breakpoint_rebase_empty_bp(self):
+        """ Именованный тег для включения блоков может быть пустым """
+        template4 = '''1<breakpoint name="PlaceToOverride"></breakpoint>3'''
+        template5 = '''
+                <rebase>subfolder.template4</rebase>
+                <breakpoint name="PlaceToOverride">2</breakpoint>
+            '''
+        expected4 = '''13'''
+        expected5 = '''123'''
+
+        self.simulate(template4, expected4, {}, "template4")
+        self.simulate(template5, expected5, {})
+
     def test_breakpoint_rebase_multiline(self):
         """
         Должно поддерживаться наследование по цепочке 1->2->3...->n

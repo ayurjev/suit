@@ -425,7 +425,7 @@ class Template(object):
     def getContent(self):
         return self.content
 
-    def getBreakPoints(self, all_levels=False, content=False):
+    def getBreakPoints(self, content, all_levels=False):
         """
         Returns a map of all breakpoints found in template.
         Use all_levels = True for recursion
@@ -434,8 +434,6 @@ class Template(object):
         :param content:     Content to be parsed
         :return: dict:      map of breakpoints {name: tag}
         """
-        if content is False:
-            content = self.content
         content = self.tags_counter.count(content)
         breakpointsMap = {}
         bps = re.findall('(<breakpoint(?P<brcount>[_\d]*)(?:\s.+?)*>.*?</breakpoint(?P=brcount)>)', content, re.DOTALL)
@@ -444,7 +442,7 @@ class Template(object):
             if bp_element.get("name"):
                 breakpointsMap[bp_element.get("name")] = self.tags_counter.decount(bp[0])
                 if all_levels:
-                    nextLevel = self.getBreakPoints(all_levels, bp_element.body)
+                    nextLevel = self.getBreakPoints(bp_element.body, all_levels)
                     for bpname in nextLevel:
                         breakpointsMap[bpname] = nextLevel[bpname]
         return breakpointsMap
@@ -462,9 +460,9 @@ class Template(object):
         if parentTemplateName is None:
             return
         parent = Template(parentTemplateName.group(1).strip("'").strip("\"").replace(".", "/") + ".html")
-        rebased_template = parent.content
-        bp_parent = parent.getBreakPoints(all_levels=True)
-        bp_current = self.getBreakPoints()
+        rebased_template = re.sub("\s\s+", " ", parent.content).strip()
+        bp_parent = parent.getBreakPoints(parent.content, all_levels=True)
+        bp_current = self.getBreakPoints(self.content)
         for bp_name in bp_parent:
             if bp_current.get(bp_name):
                 rebased_template = rebased_template.replace(bp_parent[bp_name], bp_current[bp_name])

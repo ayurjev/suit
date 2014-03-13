@@ -197,6 +197,10 @@ var SuitFilters = function() {
         return format_str;
     };
 
+    this.usebr = function(text) {
+        return text.replace("\n", "<br />");
+    }
+
 };
 
 /**

@@ -733,6 +733,8 @@ class JavascriptSyntax(Syntax):
             return '''suit.SuitFilters.to_str(%s)''' % var
         elif filterName == "dateformat":
             return '''suit.SuitFilters.dateformat(%s, %s)''' % (var, data)
+        elif filterName == "usebr":
+            return '''suit.SuitFilters.usebr(%s)''' % var
         var = "suit.SuitRunTime.stringify(%s)" % var
         return var
 
@@ -1009,6 +1011,10 @@ class SuitFilters(object):
     @staticmethod
     def _str(var):
         return '''"%s"''' % var
+
+    @staticmethod
+    def _usebr(var):
+        return re.sub("\n", "<br />", var, re.MULTILINE)
 
 
 class SuitNone(object):

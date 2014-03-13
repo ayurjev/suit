@@ -528,6 +528,10 @@ class SuitTest(unittest.TestCase):
             {"date": datetime(2007, 9, 8, 7, 5, 8)}
         )
 
+    def test_filter_use_br(self):
+        """ Проверим фильтр для замены переводов строк на <br /> """
+        self.simulate("<var filter='usebr'>text</var>", "123<br />456", {"text": "123\n456"})
+
     # # # ################################ Conditions ###################################
 
     def test_сonditions(self):

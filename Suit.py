@@ -543,7 +543,7 @@ class Syntax(metaclass=ABCMeta):
                 lambda var: self.filter(filter_name, var, self.try_compile(filter_data))
                 for filter_name, filter_data in tag.filters
             ]
-            return self.var(tag.var_name, filters, without_stringify=True)
+            return self.var(tag.var_name, filters, self.try_compile(tag.default), without_stringify=True)
 
         elif isinstance(tag, Variable):
             filters = [
@@ -697,7 +697,7 @@ class JavascriptSyntax(Syntax):
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
             filters = []
-        res = "suit.SuitRunTime.var(function(){ return data%s; }, %s)" % (
+        res = "suit.SuitRunTime.variable(function(){ return data%s; }, %s)" % (
             var_name, default if default is not None else "null"
         )
         for filter_lambda in filters:
@@ -716,7 +716,7 @@ class JavascriptSyntax(Syntax):
 
     def filter(self, filterName, var, data=None):
         if filterName == "length":
-            var = '''suit.SuitFilters.length(%s, %s)''' % (var, var)
+            var = '''suit.SuitFilters.get_length(%s, %s)''' % (var, var)
         elif filterName == "startswith":
             var = "suit.SuitFilters.startswith(%s, %s)" % (var, data)
         elif filterName == "in":
@@ -726,11 +726,11 @@ class JavascriptSyntax(Syntax):
         elif filterName == "contains":
             var = "suit.SuitFilters.contains(%s, %s)" % (var, data)
         elif filterName == "bool":
-            return "suit.SuitFilters.bool(%s)" % var
+            return "suit.SuitFilters.to_bool(%s)" % var
         elif filterName == "int":
-            return "suit.SuitFilters.int(%s)" % var
+            return "suit.SuitFilters.str2int(%s)" % var
         elif filterName == "str":
-            return '''suit.SuitFilters.str(%s)''' % var
+            return '''suit.SuitFilters.to_str(%s)''' % var
         elif filterName == "dateformat":
             return '''suit.SuitFilters.dateformat(%s, %s)''' % (var, data)
         var = "suit.SuitRunTime.stringify(%s)" % var

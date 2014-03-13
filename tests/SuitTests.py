@@ -65,7 +65,7 @@ class SuitTest(unittest.TestCase):
                 self.clearDir(path + "/" + file)
                 os.rmdir(path + "/" + file)
 
-    def simulate(self, template, expected, data=None, name=None, filterForExecuted=None, debug=False):
+    def simulate(self, template, expected, data=None, name=None, filterForExecuted=None, check_with=None, debug=False):
         """
         Эмулирует запись шаблона в файл, его компиляцию и выполнение
 
@@ -90,7 +90,6 @@ class SuitTest(unittest.TestCase):
         os.chdir("views")
         self.c.compile()
         os.chdir("../")
-
         if debug:
             # Получаем скомпилированный python ход
             f = open("views/__py__/subfolder_%s.py" % fileName)
@@ -107,8 +106,8 @@ class SuitTest(unittest.TestCase):
         f = open("views/__js__/subfolder_%s.js" % fileName)
         compiled_javascript = "".join(f.readlines())
         f.close()
-
         compiled_javascript = re.sub("\s\s+", "", compiled_javascript).replace("\n", "").rstrip(";")
+
         compiled_javascript = re.search("return (.+)},", compiled_javascript).group(1)
         if debug:
             print("JS: ", compiled_javascript)
@@ -126,8 +125,10 @@ class SuitTest(unittest.TestCase):
 
         # Основная проверка результатов выполнения
         expected = filterForExecuted(expected) if filterForExecuted is not None else expected
-        self.assertEqual(expected, executed_python)
-        self.assertEqual(expected, executed_javascript)
+
+        checker = self.assertEqual if not check_with else check_with
+        checker(expected, executed_python)
+        checker(expected, executed_javascript)
 
     def executeJavascript(self, z9source, compiled, data):
         f = open("current.js", "w+")
@@ -138,6 +139,10 @@ class SuitTest(unittest.TestCase):
             )
         )
         f.close()
+        # print('''%s(%s)''' % (
+        #     '''(function(data) {%s print(%s);})''' % (z9source, compiled),
+        #     json.dumps(data, default=json_dumps_handler)
+        # ))
 
         sp = subprocess.Popen('''java RunScriptDemo 'current.js' ''', shell=True, stdout=subprocess.PIPE)
         res = ""
@@ -248,7 +253,8 @@ class SuitTest(unittest.TestCase):
         """
         self.simulate("<var>a</var>", '''[1, 2, 3]''', {"a": [1, 2, 3]}, None, lambda m: m.replace(" ", ""))
         self.simulate("<var>a</var>", '''{"y": "aaa", "x": 1}''', {"a": {"y": "aaa", "x": 1}},
-                      filterForExecuted=lambda m: m.replace(" ", ""))
+                      filterForExecuted=lambda m: m.replace(" ", ""),
+                      check_with=self.assertCountEqual)
         self.simulate("<var>a</var>", '''[1,null,3,"",false,"True"]''', {"a": [1, None, 3, "", False, "True"]},
                       filterForExecuted=lambda m: m.replace(" ", ""))
 
@@ -1057,7 +1063,7 @@ class SuitTest(unittest.TestCase):
         dataForTemplate3 = {"a": "@"}
         dataForTemplate4 = {"b": "#"}
         expected3 = '''1ContentInBaseTemplate@3SHOULD STAY AFTER REBASE'''
-        expected4 = '''1ContentInChildTemplate#3SHOULD STAY AFTER REBASE'''
+        expected4 = '''1ContentInChildTemplate#3 SHOULD STAY AFTER REBASE'''
 
         self.simulate(template3, expected3, dataForTemplate3, "template3")
         self.simulate(template4, expected4, dataForTemplate4)
@@ -1214,6 +1220,26 @@ class SuitTest(unittest.TestCase):
         ''')
         self.simulate(template, expected, {"items": ["a", "b", "", "c"]})
 
+    def test_regressive_var_with_default_in_list(self):
+        """
+        При итерации по словарю и запуску вложенного цикла итерации по списку не обрабатывались дефолтные значения
+
+        """
+        template = '''
+            <list for="item,subitems" in="items">
+                <list for="subitem" in="subitems">
+                    <var>item</var><var d="0">subitem</var>
+                </list>
+            </list>
+        '''
+
+        expected = '''a1a2a3b4b0b6'''
+        from collections import OrderedDict
+        items = OrderedDict()
+        items["a"] = [1, 2, 3]
+        items["b"] = [4, None, 6]
+        self.simulate(template, expected, {"items": items})
+
     def test_regressive_nested_list_with_iterable_dict(self):
         """
         Если запустить итерацию по ключам и значениям словаря, а значением словаря будет выступать список,
@@ -1224,8 +1250,8 @@ class SuitTest(unittest.TestCase):
         template = '''
             <list for="num,letters" in="data">
                 (<var>num</var>)
-                <list for="char" in="letters">
-                    <var>num</var><var>char</var>
+                <list for="char_item" in="letters">
+                    <var>num</var><var>char_item</var>
                 </list>
             </list>
         '''
@@ -1355,19 +1381,23 @@ class SuitTest(unittest.TestCase):
         self.assertTrue(os.path.isfile("views/__js__/all.subfolder.js"))
 
         # Теперь проверим содержимое собранного файла:
-        expected = '''
+        expected1 = '''
             suit.SuitApi.addTemplate("subfolder.template1",
             function(data) { if (data == null) { data = {}; };
-            return "0{0}2".format(suit.SuitRunTime.stringify(suit.SuitRunTime.var(function(){
+            return "0{0}2".format(suit.SuitRunTime.stringify(suit.SuitRunTime.variable(function(){
             return data["a"]; }, null))) }, null);
+        '''
+        expected2 = '''
             suit.SuitApi.addTemplate("subfolder.template2", function(data) { if (data == null) { data = {}; };
-            return "3{0}5".format(suit.SuitRunTime.stringify(suit.SuitRunTime.var(function(){
+            return "3{0}5".format(suit.SuitRunTime.stringify(suit.SuitRunTime.variable(function(){
             return data["b"]; }, null))) }, null);
         '''
         f = open("views/__js__/all.subfolder.js")
         content = "".join(f.readlines())
         f.close()
-        self.assertEqual(trimSpaces(expected), trimSpaces(content))
+        self.assertTrue(trimSpaces(content).find(trimSpaces(expected1)) > -1)
+        self.assertTrue(trimSpaces(content).find(trimSpaces(expected2)) > -1)
+        #self.assertTrue(trimSpaces(expected2) in trimSpaces(content))
 
     def test_build_css(self):
         """

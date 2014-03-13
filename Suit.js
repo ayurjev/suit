@@ -104,7 +104,7 @@ var SuitRunTime = function() {
         else { return undefined; }
     };
 
-    this.var = function(lambdavar, default_or_null) {
+    this.variable = function(lambdavar, default_or_null) {
         try {
             var res = lambdavar();
             if (res === null || res === undefined) { return default_or_null; }
@@ -136,7 +136,7 @@ var SuitRunTime = function() {
  */
 var SuitFilters = function() {
 
-    this.length = function(variable) {
+    this.get_length = function(variable) {
         return variable == null ? 0 : this.int2str(variable).length
     };
 
@@ -159,17 +159,17 @@ var SuitFilters = function() {
          return this.inArray(needle, haystack);
     };
 
-    this.bool = function(obj) {
+    this.to_bool = function(obj) {
         if (obj == null) return false;
         var falses = { "false": true, "False": true, "null": true };
         return !falses[obj];
     };
 
-    this.int = function(value) {
+    this.str2int = function(value) {
         return parseInt(value);
     };
 
-    this.str = function(variable) {
+    this.to_str = function(variable) {
         return '\\"' + variable + '\\"'
     };
 

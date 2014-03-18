@@ -297,7 +297,7 @@ class List(XmlTag):
 
         # converting itervals
         template = re.sub(
-            "<var(?P<counter>(?:[_\d])*)(\s.*)*>%s([.|\[]+.*)*</var(?P=counter)>" % self.iterval,
+            "<var(?P<counter>(?:_[\d]+)?)([^>]*)?>%s([.|\[][^<]+)?</var(?P=counter)>" % self.iterval,
             lambda m: "<iterationvar type='value' in='%s' name='%s' path='%s'%s></iterationvar>" % (
                 self.iterable_name,
                 self.iterkey if self.iterkey is not None else self.iterval,

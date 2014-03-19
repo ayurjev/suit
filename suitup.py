@@ -2,12 +2,11 @@
 # coding=utf-8
 
 """
-Библиотека z9 >> standalone компилятор для шаблонизатор Suit
-
-Автор: Андрей Юрьев
-Дата:  июнь 2013
+standalone компилятор для шаблонизатор Suit
 
 """
+import os
+from sys import argv
 
 from suit.Suit import Compiler
 
@@ -23,4 +22,7 @@ def main():
 
 
 if __name__ == '__main__':
+    path = argv[1] if len(argv) > 1 else None
+    if path:
+        os.chdir(path)
     main()

@@ -867,11 +867,18 @@ class Suit(object):
     """
     Suit execution wrapper
     """
-    def __init__(self, templateName):
-        templateClassName = templateName.replace(".", "_")
-        module = importlib.import_module("views.__py__.%s" % templateClassName)
-        templateClass = getattr(module, templateClassName)
-        self.template = templateClass()
+    def __init__(self, path):
+        path = path.split(".")
+        self.template = None
+        for i in range(len(path)):
+            cpath = "%s/__py__/" % "/".join(path[:len(path)-i])
+            if os.path.isdir(cpath):
+                template_name_part = "_".join(path[len(path)-i:])
+                module = importlib.import_module("%s%s" % (cpath.replace("/", "."), template_name_part))
+                template_class = getattr(module, template_name_part)
+                self.template = template_class()
+        if not self.template:
+            raise Exception("template not found")
 
     def execute(self, data=None):
         """

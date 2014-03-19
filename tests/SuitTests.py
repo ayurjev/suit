@@ -99,7 +99,7 @@ class SuitTest(unittest.TestCase):
             print("PY: ", compiled_python)
 
         # Получам результат выполнения скомпилированного python кода
-        executed_python = Suit("subfolder.%s" % fileName).execute(data)
+        executed_python = Suit("views.subfolder.%s" % fileName).execute(data)
         executed_python = filterForExecuted(executed_python) if filterForExecuted is not None else executed_python
 
         # Получаем скомпилированный js код
@@ -924,7 +924,7 @@ class SuitTest(unittest.TestCase):
         # Сам шаблон не должен содержать стилей
         self.assertEqual(
             '''<div id="target">some content</div>''',
-            Suit("subfolder.template7").execute()
+            Suit("views.subfolder.template7").execute()
         )
 
         # Проверим наличие файла css и его содержимое
@@ -970,7 +970,7 @@ class SuitTest(unittest.TestCase):
             <div id="target">some content</div>
             <script src="something"></script>
             '''),
-            trimSpaces(Suit("subfolder.template8").execute())
+            trimSpaces(Suit("views.subfolder.template8").execute())
         )
 
         # Проверим наличие файла jss и его содержимое
@@ -1027,11 +1027,11 @@ class SuitTest(unittest.TestCase):
         os.chdir("../")
 
         # Проверим второй шаблон (особого интереса не представляет)
-        executed2 = Suit("subfolder.template20").execute(dataForTemplate2)
+        executed2 = Suit("views.subfolder.template20").execute(dataForTemplate2)
         self.assertEqual(expected2, executed2)
 
         # Проверим первый шаблон
-        executed1 = Suit("subfolder.template10").execute(dataForTemplate2)
+        executed1 = Suit("views.subfolder.template10").execute(dataForTemplate2)
         self.assertEqual(expected1, executed1)
 
     def test_breakpoint_include_in_list(self):
@@ -1278,10 +1278,10 @@ class SuitTest(unittest.TestCase):
         os.chdir("views")
         self.c.compile()
         os.chdir("../")
-        self.assertEqual("1 != 2", Suit("subfolder.decoratedTemplte").execute(data))
+        self.assertEqual("1 != 2", Suit("views.subfolder.decoratedTemplte").execute(data))
 
         # Проверим декоратор с параметром
-        @suit("subfolder.decoratedTemplte")
+        @suit("views.subfolder.decoratedTemplte")
         def getTemplateWithArgs(valueForOne):
             """
             Функция, которая должна вернуться словарь с данными для использования шаблонизатором
@@ -1322,7 +1322,7 @@ class SuitTest(unittest.TestCase):
         self.assertTrue(os.path.isfile("views/__js__/myFirstTemplate.js"))
         self.assertTrue(os.path.isfile("views/__css__/myFirstTemplate.css"))
         self.assertTrue(os.path.isfile("views/__py__/__init__.py"))
-        executed = Suit("myFirstTemplate").execute(data)
+        executed = Suit("views.myFirstTemplate").execute(data)
 
         self.assertEqual(expected, executed)
 
@@ -1351,7 +1351,7 @@ class SuitTest(unittest.TestCase):
         self.assertTrue(os.path.isfile("views/__py__/subfolder_template.py"))
         self.assertTrue(os.path.isfile("views/__js__/subfolder_template.js"))
 
-        executed = Suit("subfolder.template").execute(data)
+        executed = Suit("views.subfolder.template").execute(data)
         self.assertEqual(expected, executed)
 
     def test_build_js(self):

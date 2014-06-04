@@ -1,6 +1,10 @@
 
 var Suit = function() {
 
+    this.connect = function(event, jquery_object, cb) {
+        $("body").on(event, "#" + jquery_object.attr("id"), cb);
+    };
+
     /**
      * Makes a query to the backend with ajax-query
      * @param url       URL of the controller

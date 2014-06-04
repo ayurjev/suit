@@ -12,7 +12,7 @@ var Suit = function() {
             url:        url,
             type:       "POST",
             dataType:   "json",
-            data:       {"data": JSON.stringify(data)},
+            data:       data,
             success:    function( data ) { cb(data); }
         });
     };
@@ -58,6 +58,31 @@ var Suit = function() {
             }
         };
         return { "on": internal.on, "broadcast": internal.broadcast }
+    };
+
+    this.ErrorController = function() {
+        var internal = {};
+        internal.eventsController = new suit.EventsController();
+        internal.unknownExceptionHandler = false;
+        internal.knownExceptions = {};
+        internal.on = function(error_type, cb) {
+            if (error_type == "*") {
+                internal.unknownExceptionHandler = cb;
+            } else {
+                internal.knownExceptions[error_type] = true;
+                internal.eventsController.on(error_type, cb);
+            }
+        };
+        internal.broadcast = function(error) {
+            internal.eventsController.broadcast(error.error_type, error.error_data);
+            if (!internal.knownExceptions[error.error_type]) {
+                if (internal.unknownExceptionHandler) {
+                    internal.unknownExceptionHandler(error.error_data);
+                }
+            }
+        };
+        return { "on": internal.on, "broadcast": internal.broadcast };
+
     };
 
     /**
@@ -252,6 +277,8 @@ suit = new Suit();
 suit.SuitRunTime = new SuitRunTime();
 suit.SuitFilters = new SuitFilters();
 suit.SuitApi = new SuitApi();
+suit.events_controller = new suit.EventsController();
+suit.error_controller = new suit.ErrorController();
 
 String.prototype.format = function() {
     var args = arguments;

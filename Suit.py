@@ -510,8 +510,15 @@ class Template(object):
         jsCompiled = compiled["js"]
         jsApiInit = "null"
         if self.js:
-            jsApiInit = '''function() {
-                return %s()
+            jsApiInit = '''
+            function() {
+                var internal = {};
+                internal.ui = {};
+                internal.ui.body = $("body");
+                internal.error_controller = new suit.ErrorController();
+                internal.events_controller = new suit.EventsController();
+                internal.api = {};
+                return %s(internal).api
             }''' % self.js.strip()
 
         jsSource = '''suit.SuitApi.addTemplate("%s", function(data) {

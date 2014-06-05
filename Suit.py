@@ -412,9 +412,22 @@ class Template(object):
     def __init__(self, templateName):
         self.tags_counter = TagCounter()
         self.templateName = templateName
+
+        # На случай если идет обращение по абсолютному пути ищем шаблон поднимаясь по дереву директорий:
+        initial_dir = os.path.realpath(os.path.curdir)
+        if not os.path.isfile(templateName):
+            first, *tale = templateName.split("/")
+            while os.path.basename(os.path.realpath(os.path.curdir)) != first:
+                os.chdir("../")
+            os.chdir("../")
+            if not os.path.isfile(templateName):
+                raise Exception("template %s not found" % templateName)
+
         f = open(templateName)
         self.content = "".join(f.readlines())
         f.close()
+        os.chdir(initial_dir)
+
         self.content = re.sub("<!--(.+?)-->", "", self.content)         # cut all comments
         self.css, self.js = None, None
         self.parse_resources("css", "<style(?:\s.+?)*>(.*?)</style>")   # cut & save css

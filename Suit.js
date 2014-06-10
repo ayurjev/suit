@@ -2,7 +2,11 @@
 var Suit = function() {
 
     this.connect = function(event, jquery_object, cb) {
-        $("body").on(event, "#" + jquery_object.attr("id"), cb);
+        if (typeof(jquery_object) == "string") {
+            $("body").on(event, jquery_object, cb);
+        } else {
+            $("body").on(event, "#" + jquery_object.attr("id"), cb);
+        }
     };
 
     /**
@@ -253,13 +257,20 @@ var SuitApi = function() {
             if (callback !== undefined) {
                 callback(html, api);
                 if (listenersAction == "createListeners") {
-                    if (api.createListeners !== undefined) { api.createListeners(); }
+                    if (api.createListeners !== undefined && api.createListenersDone == undefined) {
+                        api.createListeners(); api.createListenersDone = true;
+                    }
                 }
                 if (listenersAction == "updateListeners") {
                     if (api.updateListeners !== undefined) { api.updateListeners(); }
                 }
                 return null;
-            } else { return html; }
+            } else {
+                if (api.createListeners !== undefined && api.createListenersDone == undefined) {
+                    api.createListeners(); api.createListenersDone = true;
+                }
+                return html;
+            }
         } else { return ""; }
     };
 

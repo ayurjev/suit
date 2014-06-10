@@ -266,7 +266,7 @@ var SuitApi = function() {
                 }
                 return null;
             } else {
-                if (api.createListeners !== undefined && api.createListenersDone == undefined) {
+                if (api && api.createListeners !== undefined && api.createListenersDone == undefined) {
                     api.createListeners(); api.createListenersDone = true;
                 }
                 return html;

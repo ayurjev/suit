@@ -246,30 +246,28 @@ var SuitApi = function() {
     this.api_container = {};
 
     this.addTemplate = function(templateName, templateRenderCallback, initApiCallback) {
-        this.templates[templateName] = { render: templateRenderCallback, initApi: initApiCallback };
+        this.templates[templateName] = { render: templateRenderCallback, initApi: initApiCallback, "inited": false};
+    };
+
+    this.markAsInited = function(templateName) {
+        if (this.templates[templateName] !== undefined) {
+            this.templates[templateName].inited = true;
+        }
     };
 
     this.executeTemplate = function(templateName, data, callback, listenersAction) {
         if (data == null) { data = {}; }
         if (this.templates[templateName] !== undefined) {
-            var html = this.templates[templateName].render(data);
             var api = this.getTemplateApi(templateName);
+            if (api && api.createListeners !== undefined && this.templates[templateName].inited === false) {
+                api.createListeners();
+                this.templates[templateName].inited = true;
+            }
             if (callback !== undefined) {
                 callback(html, api);
-                if (listenersAction == "createListeners") {
-                    if (api.createListeners !== undefined && api.createListenersDone == undefined) {
-                        api.createListeners(); api.createListenersDone = true;
-                    }
-                }
-                if (listenersAction == "updateListeners") {
-                    if (api.updateListeners !== undefined) { api.updateListeners(); }
-                }
                 return null;
             } else {
-                if (api && api.createListeners !== undefined && api.createListenersDone == undefined) {
-                    api.createListeners(); api.createListenersDone = true;
-                }
-                return html;
+                return this.templates[templateName].render(data);
             }
         } else { return ""; }
     };
@@ -279,8 +277,9 @@ var SuitApi = function() {
             return this.api_container[templateName];
         } else {
             if (this.templates[templateName] !== undefined) {
-                if (typeof(this.templates[templateName]["initApi"]) == "function" ) {
+                if (typeof(this.templates[templateName]["initApi"]) == "function" && this.templates[templateName].inited == false) {
                     this.api_container[templateName] = this.templates[templateName].initApi();
+                    this.markAsInited(templateName);
                     return this.api_container[templateName];
                 }
             }
@@ -315,6 +314,7 @@ if (typeof $ !== "undefined") {
                 if (api && api.createListeners) {
                     api.createListeners();
                 }
+                suit.SuitApi.markAsInited(templateName);
             }
         });
     });

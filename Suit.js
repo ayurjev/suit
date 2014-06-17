@@ -257,17 +257,18 @@ var SuitApi = function() {
 
     this.executeTemplate = function(templateName, data, callback, listenersAction) {
         if (data == null) { data = {}; }
+        var html = this.templates[templateName].render(data);
         if (this.templates[templateName] !== undefined) {
             var api = this.getTemplateApi(templateName);
             if (api && api.createListeners !== undefined && this.templates[templateName].inited === false) {
                 api.createListeners();
-                this.templates[templateName].inited = true;
+                this.markAsInited(templateName);
             }
             if (callback !== undefined) {
                 callback(html, api);
                 return null;
             } else {
-                return this.templates[templateName].render(data);
+                return html;
             }
         } else { return ""; }
     };
@@ -279,7 +280,6 @@ var SuitApi = function() {
             if (this.templates[templateName] !== undefined) {
                 if (typeof(this.templates[templateName]["initApi"]) == "function" && this.templates[templateName].inited == false) {
                     this.api_container[templateName] = this.templates[templateName].initApi();
-                    this.markAsInited(templateName);
                     return this.api_container[templateName];
                 }
             }

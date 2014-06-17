@@ -11,18 +11,24 @@ var Suit = function() {
 
     /**
      * Makes a query to the backend with ajax-query
+     *
      * @param url       URL of the controller
      * @param data      Request data
      * @param cb        Callback function
      */
     this.ajax = function(url, data, cb) {
+        var responseData = {};
         $.ajax({
             url:        url,
+            async:      !!cb,
             type:       "POST",
             dataType:   "json",
-            data:       data,
-            success:    function( data ) { cb(data); }
-        });
+            data:       data
+        })
+        .done(function(data){ responseData = data; })
+        .done(cb);
+
+        return responseData;
     };
 
     /**

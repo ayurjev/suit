@@ -531,8 +531,14 @@ class Template(object):
                 internal.error_controller = new suit.ErrorController();
                 internal.events_controller = new suit.EventsController();
                 internal.api = {};
-                return %s(internal).api
-            }''' % self.js.strip()
+                var api = %s(internal).api
+                api._createListeners = function() { if (!suit.SuitApi.templates["%s"].inited) { suit.SuitApi.templates["%s"].inited = true; api.createListeners(); }}
+                return api;
+            }''' % (
+                self.js.strip(),
+                self.templateName.replace(".html", "").replace("/", "."),
+                self.templateName.replace(".html", "").replace("/", ".")
+            )
 
         jsSource = '''suit.SuitApi.addTemplate("%s", function(data) {
            if (data == null) { data = {}; };

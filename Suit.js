@@ -259,10 +259,13 @@ var SuitApi = function() {
         this.templates[templateName] = { render: templateRenderCallback, initApi: initApiCallback, "inited": false};
     };
 
-    this.markAsInited = function(templateName) {
-        if (this.templates[templateName] !== undefined) {
-            this.templates[templateName].inited = true;
-        }
+    this.updateListeners = function() {
+        $(".ui-container").each(function() {
+            var templateName = $(this).attr("data-template-name");
+            if (templateName) {
+                var api = suit.template(templateName).api();
+                if (api) api._createListeners();}
+        });
     };
 
     this.executeTemplate = function(templateName, data, callback, listenersAction) {
@@ -270,14 +273,13 @@ var SuitApi = function() {
         var html = this.templates[templateName].render(data);
         if (this.templates[templateName] !== undefined) {
             var api = this.getTemplateApi(templateName);
-            if (api && api.createListeners !== undefined && this.templates[templateName].inited === false) {
-                api.createListeners();
-                this.markAsInited(templateName);
-            }
+            api._createListeners();
             if (callback !== undefined) {
                 callback(html, api);
+                this.updateListeners();
                 return null;
             } else {
+                setTimeout(this.updateListeners, 200);
                 return html;
             }
         } else { return ""; }
@@ -288,13 +290,12 @@ var SuitApi = function() {
             return this.api_container[templateName];
         } else {
             if (this.templates[templateName] !== undefined) {
-                if (typeof(this.templates[templateName]["initApi"]) == "function" && this.templates[templateName].inited == false) {
+                if (typeof(this.templates[templateName]["initApi"]) == "function") {
                     this.api_container[templateName] = this.templates[templateName].initApi();
                     return this.api_container[templateName];
                 }
             }
         }
-        return null;
     };
 };
 suit = new Suit();
@@ -317,15 +318,6 @@ String.prototype.format = function() {
 /* UI-containers initialization */
 if (typeof $ !== "undefined") {
     $(document).ready(function() {
-        $(".ui-container").each(function() {
-            var templateName = $(this).attr("data-template-name");
-            if (templateName) {
-                var api = suit.template(templateName).api();
-                if (api && api.createListeners) {
-                    api.createListeners();
-                }
-                suit.SuitApi.markAsInited(templateName);
-            }
-        });
+        suit.SuitApi.updateListeners();
     });
 }

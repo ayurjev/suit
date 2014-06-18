@@ -23,7 +23,7 @@ var Suit = function() {
             async:      !!cb,
             type:       "POST",
             dataType:   "json",
-            data:       data
+            data:       {json: JSON.stringify(data)}
         })
         .done(function(data){ responseData = data; })
         .done(cb);

@@ -179,6 +179,10 @@ var SuitFilters = function() {
         return variable == null ? 0 : this.int2str(variable).length
     };
 
+    this.plural_form = function(number, forms) {
+        return suit.utils.pluralForm(number, forms);
+    };
+
     this.startswith = function(stringVar, substring) {
         if (stringVar == null || substring == null) { return false }
         return (stringVar.indexOf(substring) == 0);

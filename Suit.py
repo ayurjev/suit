@@ -755,6 +755,8 @@ class JavascriptSyntax(Syntax):
             return '''suit.SuitFilters.dateformat(%s, %s)''' % (var, data)
         elif filterName == "usebr":
             return '''suit.SuitFilters.usebr(%s)''' % var
+        elif filterName == "plural_form":
+            return '''suit.SuitFilters.plural_form(%s, %s)''' % (var, data)
         var = "suit.SuitRunTime.stringify(%s)" % var
         return var
 
@@ -1042,6 +1044,22 @@ class SuitFilters(object):
     @staticmethod
     def _usebr(var):
         return re.sub("\n", "<br />", var, re.MULTILINE)
+
+    @staticmethod
+    def _plural_form(initial_num, words):
+        print(words, type(words))
+        if words:
+            words = json.loads(words)
+        num = int(initial_num) % 100
+        if num > 19:
+            num %= 10
+        if num == 1:
+            word = words[0]
+        elif num == 2 or  num == 3 or num == 4:
+            word = words[1]
+        else:
+            word = words[2]
+        return "%d %s" % (initial_num, word)
 
 
 class SuitNone(object):

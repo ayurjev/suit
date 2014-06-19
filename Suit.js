@@ -190,6 +190,9 @@ var SuitRunTime = function() {
 var SuitFilters = function() {
 
     this.get_length = function(variable) {
+        if (typeof(variable, "object")) {
+            return Object.keys(variable).length;
+        }
         return variable == null ? 0 : this.int2str(variable).length
     };
 

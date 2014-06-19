@@ -530,12 +530,13 @@ class Template(object):
                 internal.ui.body = $("body");
                 internal.error_controller = new suit.ErrorController();
                 internal.events_controller = new suit.EventsController();
-                internal.self = $ ? $("[data-template-name='contracts.search_widget'].ui-container") : undefined;
+                internal.self = "[data-template-name='%s'].ui-container";
                 internal.api = {};
                 var api = %s(internal).api
                 api._createListeners = function() { if (!suit.SuitApi.templates["%s"].inited) { suit.SuitApi.templates["%s"].inited = true; api.createListeners(); }}
                 return api;
             }''' % (
+                self.templateName.replace(".html", "").replace("/", "."),
                 self.js.strip(),
                 self.templateName.replace(".html", "").replace("/", "."),
                 self.templateName.replace(".html", "").replace("/", ".")

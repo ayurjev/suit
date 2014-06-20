@@ -1055,6 +1055,7 @@ class SuitFilters(object):
 
     @staticmethod
     def _plural_form(initial_num, words):
+        initial_num = initial_num if initial_num else 0
         if words:
             words = json.loads(words)
         num = int(initial_num) % 100

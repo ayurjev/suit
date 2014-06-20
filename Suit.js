@@ -290,7 +290,9 @@ var SuitApi = function() {
         var html = this.templates[templateName].render(data);
         if (this.templates[templateName] !== undefined) {
             var api = this.getTemplateApi(templateName);
-            api._createListeners();
+            if (api && api._createListeners) {
+                api._createListeners();
+            }
             if (callback !== undefined) {
                 callback(html, api);
                 this.updateListeners();

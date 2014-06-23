@@ -290,7 +290,7 @@ class List(XmlTag):
 
         # iteration counter
         template = re.sub(
-            "<var(?P<counter>([_\d])*)>i</var(?P=counter)>",
+            "<var(?P<counter>(_\d+)?)>i</var(?P=counter)>",
             lambda m: "<iterationkey type='key' mod=' + 1' name='%s'></iterationkey>" % self.iterval,
             template
         )
@@ -361,7 +361,7 @@ class TemplatePart(object):
         """
         self.tags = tags_to_process
         self.tags_pattern = re.compile(
-            '<(?P<tagName>(?:%s)+([_\d])*)(?:\s.+?)*>(?:.?)*</(?P=tagName)>' % (
+            '<(?P<tagName>(?:%s)+(_\d+)?)(?:\s.+?)*>(?:.?)*</(?P=tagName)>' % (
                 "|".join(tags_to_process)
             ), re.DOTALL
         )
@@ -484,10 +484,9 @@ class Template(object):
     def include(self):
         """ Includes all sub templates if template contains <breakpoint> tags with 'include' attribute """
         self.content = re.sub(
-            '(<breakpoint(?P<brcount>(?:[_\d])*) include=(.+?)(?:\s.+?)*>.*</breakpoint(?P=brcount)>)',
+            '(<breakpoint(?P<brcount>(?:_\d+)?) include=(.+?)(?:\s.+?)*>.*</breakpoint(?P=brcount)>)',
             lambda m: Template(m.group(3).strip("'").strip("\"").replace(".", "/") + ".html").getContent(),
-            self.content,
-            re.DOTALL
+            self.content
         )
 
     def compile(self, languageEnginesMap):
@@ -532,7 +531,7 @@ class Template(object):
                 internal.events_controller = new suit.EventsController();
                 internal.self = "[data-template-name='%s'].ui-container";
                 internal.api = {};
-                var api = %s(internal).api
+                var api = %s(internal).api;
                 api._createListeners = function() { if (!suit.SuitApi.templates["%s"].inited) { suit.SuitApi.templates["%s"].inited = true; api.createListeners(); }}
                 return api;
             }''' % (

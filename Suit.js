@@ -190,8 +190,10 @@ var SuitRunTime = function() {
 var SuitFilters = function() {
 
     this.get_length = function(variable) {
-        if (typeof(variable, "object")) {
-            return Object.keys(variable).length;
+        if (typeof(variable) == "object") {
+            var counter = 0;
+            for (k in variable) counter++;
+            return counter;
         }
         return variable == null ? 0 : this.int2str(variable).length
     };
@@ -332,7 +334,6 @@ String.prototype.format = function() {
         }
     );
 };
-
 
 /* UI-containers initialization */
 if (typeof $ !== "undefined") {

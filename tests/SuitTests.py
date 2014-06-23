@@ -984,12 +984,16 @@ class SuitTest(unittest.TestCase):
                 if (data == null) { data = {}; };
                 return "<div id=\\"target\\">some content</div><script src=\\"something\\"></script>"
             }, function() {
-                return (function() {
-                    return {
-                        sayHello: function() { alert("Hello"); }
-                    }
-                })()
-            });
+            var internal = {};
+            internal.ui = {};
+            internal.ui.body = $("body");
+            internal.error_controller = new suit.ErrorController();
+            internal.events_controller = new suit.EventsController();
+            internal.self = "[data-template-name='subfolder.template8'].ui-container";
+            internal.api = {};
+            var api = (function() { return { sayHello: function() { alert("Hello"); } } })(internal).api;
+            api._createListeners = function() { if (!suit.SuitApi.templates["subfolder.template8"].inited) { suit.SuitApi.templates["subfolder.template8"].inited = true; api.createListeners(); }}
+            return api; });
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
         #self.assertEqual(expected, js_written)
@@ -1154,12 +1158,16 @@ class SuitTest(unittest.TestCase):
                 if (data == null) { data = {}; };
                 return "<div>main</div>"
             }, function() {
-                return (function() {
-                    return {
-                        sayHello: function() { alert("Hello"); }
-                    }
-                })()
-            });
+            var internal = {};
+            internal.ui = {};
+            internal.ui.body = $("body");
+            internal.error_controller = new suit.ErrorController();
+            internal.events_controller = new suit.EventsController();
+            internal.self = "[data-template-name='subfolder.mainTemplate2'].ui-container";
+            internal.api = {};
+            var api = (function() { return { sayHello: function() { alert("Hello"); } } })(internal).api;
+            api._createListeners = function() { if (!suit.SuitApi.templates["subfolder.mainTemplate2"].inited) { suit.SuitApi.templates["subfolder.mainTemplate2"].inited = true; api.createListeners(); }}
+            return api; });
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
 
@@ -1167,7 +1175,7 @@ class SuitTest(unittest.TestCase):
             <rebase>subfolder.mainTemplate2</rebase>
             <div>child</div>
             <script>
-                (function() {
+                (function(internal) {
                     return {
                         sayHello: function() { alert("Hello from child template"); }
                     }
@@ -1184,12 +1192,16 @@ class SuitTest(unittest.TestCase):
                 if (data == null) { data = {}; };
                 return "<div>main</div>"
             }, function() {
-                return (function() {
-                    return {
-                        sayHello: function() { alert("Hello from child template"); }
-                    }
-                })()
-            });
+            var internal = {};
+            internal.ui = {};
+            internal.ui.body = $("body");
+            internal.error_controller = new suit.ErrorController();
+            internal.events_controller = new suit.EventsController();
+            internal.self = "[data-template-name='subfolder.templateChild'].ui-container";
+            internal.api = {};
+            var api = (function(internal) { return { sayHello: function() { alert("Hello from child template"); } } })(internal).api;
+            api._createListeners = function() { if (!suit.SuitApi.templates["subfolder.templateChild"].inited) { suit.SuitApi.templates["subfolder.templateChild"].inited = true; api.createListeners(); }}
+            return api; });
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
 

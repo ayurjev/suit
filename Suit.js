@@ -37,8 +37,8 @@ var Suit = function() {
             data:       {json: JSON.stringify(data)}
         })
         .done(function(data){ responseData = data; })
-        .done(cb);
-
+        .done(function(data) {if (cb && cb(data) !== false) suit.events_controller.broadcast("XHR_Request_Completed", data)})
+        .fail(function() { suit.events_controller.broadcast("UnknownError") });
         return responseData;
     };
 
@@ -51,8 +51,10 @@ var Suit = function() {
      * @param timeout   Execution timeout
      */
     this.pjax = function(container, url, data, cb, timeout) {
+
         if (!$(container).data("success.pjax.binded")) {
-            $(container).bind("success.pjax", cb);
+            $(container).bind("success.pjax", function(event, data) {suit.events_controller.broadcast("XHR_Request_Completed", data); return cb(data)});
+            $(container).bind("error.pjax", function(jqXHR, textStatus, errorThrown) {suit.events_controller.broadcast("UnknownError", jqXHR, textStatus, errorThrown);});
             $(container).data("success.pjax.binded", true);
         }
         $.pjax({

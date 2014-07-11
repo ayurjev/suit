@@ -50,6 +50,9 @@ class TemplateParseError(Exception):
     pass
 
 
+class TemplateNotFound(Exception):
+    pass
+
 class TagCounter(object):
     """ Counts/decounts a nested tags """
 
@@ -421,7 +424,7 @@ class Template(object):
                 os.chdir("../")
             os.chdir("../")
             if not os.path.isfile(templateName):
-                raise Exception("template %s not found" % templateName)
+                raise TemplateNotFound("template %s not found" % templateName)
 
         f = open(templateName)
         self.content = "".join(f.readlines())
@@ -907,7 +910,7 @@ class Suit(object):
                 template_class = getattr(module, template_name_part)
                 self.template = template_class()
         if not self.template:
-            raise Exception("template not found")
+            raise TemplateNotFound("template not found")
 
     def execute(self, data=None):
         """

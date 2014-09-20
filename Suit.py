@@ -573,7 +573,7 @@ class Syntax(metaclass=ABCMeta):
                 lambda var: self.filter(filter_name, var, self.try_compile(filter_data))
                 for filter_name, filter_data in tag.filters
             ]
-            return self.var(tag.var_name, filters, self.try_compile(tag.default), without_stringify=True)
+            return self.var(tag.var_name, filters, self.try_compile(tag.default))
 
         elif isinstance(tag, Variable):
             filters = [

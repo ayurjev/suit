@@ -192,7 +192,9 @@ class Variable(XmlTag):
         varDottedNotation = varDottedNotation.strip(".")
         varDottedNotation = varDottedNotation.replace(".[", "[")
         varDottedNotation = re.sub("\.+", ".", varDottedNotation)
+
         tmp = re.sub('''\[.+?\]''', lambda m: "." + m.group(0), varDottedNotation)
+        tmp = tmp.replace("].[", '''][''')
         tmp = tmp.replace(".[", '''"][''')
         tmp = tmp.replace("].", ''']["''')
         tmp = tmp.replace(".", '''"]["''')

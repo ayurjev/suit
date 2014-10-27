@@ -23,11 +23,12 @@ var Suit = function() {
     /**
      * Makes a query to the backend with ajax-query
      *
-     * @param url       URL of the controller
-     * @param data      Request data
-     * @param cb        Callback function
+     * @param url                       URL of the controller
+     * @param data                      Request data
+     * @param cb                        Callback function
+     * @param error_suppression         Callback function for error suppression
      */
-    this.ajax = function(url, data, cb) {
+    this.ajax = function(url, data, cb, error_suppression) {
         var responseData = {};
         $.ajax({
             url:        url,
@@ -37,7 +38,9 @@ var Suit = function() {
             data:       {json: JSON.stringify(data)}
         })
         .done(function(data){ responseData = data; })
-        .done(function(data) {if (cb && cb(data) !== false) suit.events_controller.broadcast("XHR_Request_Completed", data)})
+        .done(function(data) {
+                if (cb && cb(data) !== false && (!error_suppression || error_suppression(data) !== true))
+                suit.events_controller.broadcast("XHR_Request_Completed", data, error_suppression)})
         .fail(function() { suit.events_controller.broadcast("UnknownError") });
         return responseData;
     };

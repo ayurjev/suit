@@ -56,7 +56,8 @@ class TemplateNotFound(Exception):
 class TagCounter(object):
     """ Counts/decounts a nested tags """
 
-    def __init__(self):
+    def __init__(self, tags_to_process=None):
+        self.tags_to_process = tags_to_process or SuitTags
         self.maxI = 0
 
     def count(self, expression):
@@ -68,7 +69,7 @@ class TagCounter(object):
         try:
             stack = []
             self.maxI = 0
-            p = re.compile("<(/*(%s))(\s|>)+" % "|".join(SuitTags), re.DOTALL)
+            p = re.compile("<(/*(%s))(\s|>)+" % "|".join(self.tags_to_process), re.DOTALL)
             return re.sub(p, lambda tagMatch: self._manageStack(tagMatch, stack), expression)
         except IndexError:
             raise TemplateParseError("opening/closing tags missmatch found: %s" % expression)
@@ -355,7 +356,7 @@ class TemplatePart(object):
         self.cdata = []
         self.tags = None
         self.tags_pattern = None
-        self.tags_counter = TagCounter()
+        self.tags_counter = TagCounter(tags_to_process)
 
         if tags_to_process is None:
             tags_to_process = SuitTags

@@ -1019,7 +1019,7 @@ class SuitFilters(object):
     """
     @staticmethod
     def _length(var):
-        return len(str(var) if isinstance(var, int) is True else var) if var not in [None] else 0
+        return len(str(var) if isinstance(var, (int, float)) is True else var) if var not in [None, 0, 0.0, ""] else 0
 
     @staticmethod
     def _startswith(var, data=None):

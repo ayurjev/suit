@@ -140,12 +140,12 @@ class XmlTag(object):
             elif char == "'":
                 if quotes is None:
                     quotes = "'"
-                elif quotes == "'":
+                if quotes == "'":
                     quotes_opened1 = quotes_opened1 is False
             elif char == '"':
                 if quotes is None:
                     quotes = '"'
-                elif quotes == '"':
+                if quotes == '"':
                     quotes_opened2 = quotes_opened2 is False
             firstLine += char
         return firstLine

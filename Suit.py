@@ -127,6 +127,7 @@ class XmlTag(object):
         Returns the first line of the tag (opening part between < and > with all attributes)
         :return: str:
         """
+        quotes = None
         firstLine, stack, quotes_opened1, quotes_opened2 = "", 0, False, False
         for char in expression:
             if char == "<" and (quotes_opened1 is False and quotes_opened2 is False):
@@ -137,9 +138,15 @@ class XmlTag(object):
                     firstLine += char
                     break
             elif char == "'":
-                quotes_opened1 = quotes_opened1 is False
+                if quotes is None:
+                    quotes = "'"
+                elif quotes == "'":
+                    quotes_opened1 = quotes_opened1 is False
             elif char == '"':
-                quotes_opened2 = quotes_opened2 is False
+                if quotes is None:
+                    quotes = '"'
+                elif quotes == '"':
+                    quotes_opened2 = quotes_opened2 is False
             firstLine += char
         return firstLine
 
@@ -1019,7 +1026,7 @@ class SuitFilters(object):
     """
     @staticmethod
     def _length(var):
-        return len(str(var) if isinstance(var, (int, float)) is True else var) if var not in [None, 0, 0.0, ""] else 0
+        return len(str(var) if isinstance(var, (int, float)) is True else var) if var not in [None, ""] else 0
 
     @staticmethod
     def _startswith(var, data=None):

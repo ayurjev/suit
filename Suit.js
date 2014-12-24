@@ -172,6 +172,8 @@ var SuitRunTime = function() {
 
 
     this.opt = function(condition, trueblock, falseblock) {
+        if (condition.indexOf("\\") > -1)
+            return eval('"'+condition+ '"') ? trueblock() : falseblock();
         return eval(condition) ? trueblock() : falseblock();
     };
 

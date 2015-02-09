@@ -960,7 +960,7 @@ class SuitRunTime(object):
     @staticmethod
     def stringify(obj):
         """ Prints variable """
-        return json.dumps(obj, default=json_dumps_handler) if type(obj) in [list, dict] else obj
+        return json.dumps(obj, default=json_dumps_handler) if isinstance(obj, (list, dict)) else obj
 
     @staticmethod
     def var(lambdavar, default, context):
@@ -1006,7 +1006,7 @@ class SuitRunTime(object):
         :param iterable:            iterable object
         :return: str:               result of cycle
         """
-        iterable = range(0, len(iterable)) if type(iterable) is list else iterable
+        iterable = range(0, len(iterable)) if isinstance(iterable, list) else iterable
         return "".join([iterationGenerator(itervar) for itervar in iterable])
 
     @staticmethod

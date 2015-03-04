@@ -544,17 +544,22 @@ class Template(object):
                 internal.ui.body = $("body");
                 internal.error_controller = new suit.ErrorController();
                 internal.events_controller = new suit.EventsController();
-                internal.self = "[data-template-name='%s'].ui-container";
                 internal.api = {};
-                var api = %s(internal).api;
-                api._createListeners = function() { if (!suit.SuitApi.templates["%s"].inited) { suit.SuitApi.templates["%s"].inited = true; api.createListeners(); }}
-                return api;
-            }''' % (
-                self.templateName.replace(".html", "").replace("/", "."),
-                self.js.strip(),
-                self.templateName.replace(".html", "").replace("/", "."),
-                self.templateName.replace(".html", "").replace("/", ".")
-            )
+                %s(internal);
+                internal.inited = false;
+                internal.api._createListeners = function() { if (!internal.inited) { internal.inited = true; internal.api.createListeners(); }}
+                internal.api._register_self = function(self) { internal.self = self; }
+                internal.refresh = function(data) {
+                    var html = suit.template(internal.self.attr("data-template-name")).execute(data);
+                    var inner_containers = $(".data-container", internal.self);
+                    var new_inner_containers = $(".data-container", $(html));
+                    inner_containers.each(function(num, inner_container) {
+                        $(inner_container).html($(new_inner_containers[num]).html() || "");
+                    })
+                }
+                internal.api.refresh = internal.refresh;
+                return internal.api;
+            }''' % self.js.strip()
 
         jsSource = '''suit.SuitApi.addTemplate("%s", function(data) {
            if (data == null) { data = {}; };

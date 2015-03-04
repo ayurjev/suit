@@ -290,7 +290,9 @@ var SuitApi = function() {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
                 var api = suit.template(templateName).api();
-                if (api) api._createListeners();}
+                api._register_self($(this));
+                if (api) api._createListeners();
+            }
         });
     };
 

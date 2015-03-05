@@ -4,16 +4,12 @@ var Suit = function() {
     this.connect = function(p1, p2, p3, p4) {
         var initiator_selector = p1;
         var event_name = p2;
-        var cb;
-        var subscriber;
-        if (p4 == undefined) { cb = p3; subscriber = $("body"); }
-        else { cb = p4; subscriber = p3; }
-        if (subscriber.jquery) {
-            subscriber.on(event_name, initiator_selector, cb);
+        if (p4 == undefined) {
+            $("body").on(event_name, initiator_selector, p3);
         }
         else {
             if (initiator_selector.on) {
-                initiator_selector.on(event_name, cb, subscriber);
+                initiator_selector.on(event_name, p4, p3);
             } else {
                 throw new Error("there is no method 'on' in object '" + initiator_selector + "'");
             }

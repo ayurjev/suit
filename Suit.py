@@ -557,7 +557,7 @@ class Template(object):
                         $(inner_container).html($(new_inner_containers[num]).html() || "");
                     })
                 }
-                internal.api.refresh = internal.refresh;
+                if (!internal.api.refresh) internal.api.refresh = internal.refresh;
                 return internal.api;
             }''' % self.js.strip()
 

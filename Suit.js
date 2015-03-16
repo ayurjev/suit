@@ -282,14 +282,7 @@ var SuitApi = function() {
     };
 
     this.updateListeners = function() {
-        $(".ui-container").each(function() {
-            var templateName = $(this).attr("data-template-name");
-            if (templateName) {
-                var api = suit.template(templateName).api();
-                if (api) api._register_self($(this));
-                if (api) api._createListeners();
-            }
-        });
+        $(".ui-container").each(suit.load);
     };
 
     this.executeTemplate = function(templateName, data, callback, listenersAction) {
@@ -330,6 +323,24 @@ suit.SuitFilters = new SuitFilters();
 suit.SuitApi = new SuitApi();
 suit.events_controller = new suit.EventsController();
 suit.error_controller = new suit.ErrorController();
+suit.load = function() {
+    if ($(this).find(".ui-container").length) {
+        $(this).find(".ui-container").each(suit.load);
+    }
+    if (!$(this).prop("ui-container-loaded")) {
+        var templateName = $(this).attr("data-template-name");
+        if (templateName) {
+            var api = suit.template(templateName).api();
+            if (api) api._register_self($(this));
+            if (api) api._createListeners();
+            $(this).prop("ui-container-loaded", true)
+        }
+    }
+};
+
+suit.widget = function(data_template_name, scope_selector) {
+    return $.data($("[data-template-name='"+data_template_name+"']", scope_selector)[0], "api");
+};
 
 String.prototype.format = function() {
     var args = arguments;

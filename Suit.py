@@ -547,15 +547,16 @@ class Template(object):
                 internal.api = {};
                 %s(internal);
                 internal.inited = false;
-                internal.api._createListeners = function() { if (!internal.inited) { internal.inited = true; internal.api.createListeners(); }}
-                internal.api._register_self = function(self) { internal.self = self; }
+                internal.api._createListeners = function() { if (!internal.inited) { internal.inited = true; if (internal.api.createListeners) internal.api.createListeners(); }}
+                internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); }
                 internal.refresh = function(data) {
                     var html = suit.template(internal.self.attr("data-template-name")).execute(data);
                     var inner_containers = $(".data-container", internal.self);
                     var new_inner_containers = $(".data-container", $(html));
                     inner_containers.each(function(num, inner_container) {
                         $(inner_container).html($(new_inner_containers[num]).html() || "");
-                    })
+                    });
+                    $(".ui-container").each(suit.load);
                 }
                 if (!internal.api.refresh) internal.api.refresh = internal.refresh;
                 return internal.api;

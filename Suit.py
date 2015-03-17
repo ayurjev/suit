@@ -557,7 +557,7 @@ class Template(object):
                         $(inner_container).html($(new_inner_containers[num]).html() || "");
                     });
                     suit.updateListeners();
-                    internal.api.createListeners();
+                    internal.api._createListeners();
                 }
                 internal.connect = function(selector, event, cb) {
                     internal.self.off(event, selector, internal.self.data("cb_"+event+selector));

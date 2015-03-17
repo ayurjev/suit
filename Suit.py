@@ -558,6 +558,7 @@ class Template(object):
                     });
                     $(".ui-container").each(suit.load);
                 }
+                internal.connect = function(selector, event, cb) {internal.self.on(event, selector, cb)};
                 if (!internal.api.refresh) internal.api.refresh = internal.refresh;
                 return internal.api;
             }''' % self.js.strip()

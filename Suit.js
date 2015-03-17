@@ -9,7 +9,7 @@ var Suit = function() {
         }
         else {
             if (initiator_selector.on) {
-                initiator_selector.on(event_name, p4, p3);
+                initiator_selector.on(event_name, p3, p4);
             } else {
                 throw new Error("there is no method 'on' in object '" + initiator_selector + "'");
             }
@@ -72,7 +72,7 @@ var Suit = function() {
     this.EventsController = function() {
         var internal = {};
         internal.eventsHandlers = {};
-        internal.on = function(eventName, cb, subscriber) {
+        internal.on = function(eventName, subscriber, cb) {
             if (!internal.eventsHandlers[eventName]) { internal.eventsHandlers[eventName] = []; }
             internal.eventsHandlers[eventName].push({"subscriber": subscriber, "cb": cb});
         };

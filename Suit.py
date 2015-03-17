@@ -546,8 +546,8 @@ class Template(object):
                 internal.events_controller = new suit.EventsController();
                 internal.api = {};
                 %s(internal);
-                internal.inited = false;
-                internal.api._createListeners = function() { if (!internal.inited) { internal.inited = true; if (internal.api.createListeners) internal.api.createListeners(); }}
+
+                internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); }
                 internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); }
                 internal.refresh = function(data) {
                     var html = suit.template(internal.self.attr("data-template-name")).execute(data);
@@ -556,9 +556,19 @@ class Template(object):
                     inner_containers.each(function(num, inner_container) {
                         $(inner_container).html($(new_inner_containers[num]).html() || "");
                     });
-                    $(".ui-container").each(suit.load);
+                    suit.updateListeners();
+                    internal.api.createListeners();
                 }
-                internal.connect = function(selector, event, cb) {internal.self.on(event, selector, cb)};
+                internal.connect = function(selector, event, cb) {
+                    internal.self.off(event, selector, internal.self.data("cb_"+event+selector));
+                    internal.self.on(event, selector, cb);
+                    internal.self.data("cb_"+event+selector, cb);
+                };
+                internal.widget = function(data_template_name, host_container) {
+                    var hc = host_container ? $(host_container, internal.self) : internal.self;
+                    var widget = hc.find("[data-template-name='"+data_template_name+"']:first");
+                    return widget.data("api");
+                };
                 if (!internal.api.refresh) internal.api.refresh = internal.refresh;
                 return internal.api;
             }''' % self.js.strip()

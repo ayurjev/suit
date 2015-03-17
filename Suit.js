@@ -283,7 +283,7 @@ var SuitApi = function() {
     };
 
     this.getTemplateApi = function(templateName) {
-        return this.templates[templateName].initApi();
+        return $("body").find("[data-template-name='"+templateName+"']:first").data("api");
     };
 };
 suit = new Suit();
@@ -300,7 +300,7 @@ suit.updateListeners = function() {
         if (!$(this).attr("ui-container-loaded")) {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
-                var api = suit.template(templateName).api();
+                var api = suit.SuitApi.templates[templateName].initApi();
                 if (api) api._register_self($(this));
                 if (api) api._createListeners();
                 $(this).attr("ui-container-loaded", true)

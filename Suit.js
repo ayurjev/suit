@@ -1,15 +1,35 @@
 
 var Suit = function() {
+    var events_listeners = {};
+
+    this.on = function(initiator, event_name, selector, cb) {
+        if (!events_listeners[initiator]) {
+            events_listeners[initiator] = {};
+        }
+
+        if (!events_listeners[initiator][event_name + selector]) {
+            events_listeners[initiator][event_name + selector] = [];
+        }
+
+        for (var i = 0; i < events_listeners[initiator][event_name + selector].length; i++) {
+            if (events_listeners[initiator][event_name + selector][i].toSource() == cb.toSource()) {
+                return;
+            }
+        }
+
+        events_listeners[initiator][event_name + selector].push(cb);
+        initiator.on(event_name, selector, cb);
+    };
 
     this.connect = function(p1, p2, p3, p4) {
         var initiator_selector = p1;
         var event_name = p2;
         if (p4 == undefined) {
-            $("body").on(event_name, initiator_selector, p3);
+            this.on($("body"), event_name, initiator_selector, p3);
         }
         else {
             if (initiator_selector.on) {
-                initiator_selector.on(event_name, p3, p4);
+                this.on(initiator_selector, event_name, p3, p4);
             } else {
                 throw new Error("there is no method 'on' in object '" + initiator_selector + "'");
             }
@@ -282,8 +302,12 @@ var SuitApi = function() {
         return this.templates[templateName].render(data || {});
     };
 
+    this.makeTemplateApi = function(templateName) {
+        return this.templates[templateName].initApi ? this.templates[templateName].initApi() : undefined;
+    };
+
     this.getTemplateApi = function(templateName) {
-        return $("body").find("[data-template-name='"+templateName+"']:first").data("api");
+        return $("body").find("[data-template-name='"+templateName+"']:first").data("api") || this.makeTemplateApi(templateName);
     };
 };
 suit = new Suit();
@@ -300,7 +324,7 @@ suit.updateListeners = function() {
         if (!$(this).attr("ui-container-loaded")) {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
-                var api = suit.SuitApi.templates[templateName].initApi();
+                var api = suit.SuitApi.makeTemplateApi(templateName);
                 if (api) api._register_self($(this));
                 if (api) api._createListeners();
                 $(this).attr("ui-container-loaded", true)

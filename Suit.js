@@ -6,17 +6,14 @@ var Suit = function() {
         if (!events_listeners[initiator]) {
             events_listeners[initiator] = {};
         }
-
         if (!events_listeners[initiator][event_name + selector]) {
             events_listeners[initiator][event_name + selector] = [];
         }
-
         for (var i = 0; i < events_listeners[initiator][event_name + selector].length; i++) {
-            if (events_listeners[initiator][event_name + selector][i].toSource() == cb.toSource()) {
+            if (events_listeners[initiator][event_name + selector][i].toString() == cb.toString()) {
                 return;
             }
         }
-
         events_listeners[initiator][event_name + selector].push(cb);
         initiator.on(event_name, selector, cb);
     };

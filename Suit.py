@@ -559,11 +559,7 @@ class Template(object):
                     suit.updateListeners();
                     internal.api._createListeners();
                 }
-                internal.connect = function(selector, event, cb) {
-                    internal.self.off(event, selector, internal.self.data("cb_"+event+selector));
-                    internal.self.on(event, selector, cb);
-                    internal.self.data("cb_"+event+selector, cb);
-                };
+                internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)};
                 internal.widget = function(data_template_name, host_container) {
                     var hc = host_container ? $(host_container, internal.self) : internal.self;
                     var widget = hc.find("[data-template-name='"+data_template_name+"']:first");

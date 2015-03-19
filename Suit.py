@@ -535,40 +535,7 @@ class Template(object):
 
         # Build js
         jsCompiled = compiled["js"]
-        jsApiInit = "null"
-        if self.js:
-            jsApiInit = '''
-            function() {
-                var internal = {};
-                internal.ui = {};
-                internal.ui.body = $("body");
-                internal.error_controller = new suit.ErrorController();
-                internal.events_controller = new suit.EventsController();
-                internal.api = {};
-                %s(internal);
-
-                internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); }
-                internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); }
-                internal.refresh = function(data) {
-                    var html = suit.template(internal.self.attr("data-template-name")).execute(data);
-                    var inner_containers = $(".data-container", internal.self);
-                    var new_inner_containers = $(".data-container", $(html));
-                    inner_containers.each(function(num, inner_container) {
-                        $(inner_container).html($(new_inner_containers[num]).html() || "");
-                    });
-                    suit.updateListeners();
-                    internal.api._createListeners();
-                }
-                internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)};
-                internal.widget = function(data_template_name, host_container) {
-                    var hc = host_container ? $(host_container, internal.self) : internal.self;
-                    var widget = hc.find("[data-template-name='"+data_template_name+"']:first");
-                    return widget.data("api");
-                };
-                if (!internal.api.refresh) internal.api.refresh = internal.refresh;
-                return internal.api;
-            }''' % self.js.strip()
-
+        jsApiInit = self.js.strip() if self.js else "null"
         jsSource = '''suit.SuitApi.addTemplate("%s", function(data) {
            if (data == null) { data = {}; };
            return %s

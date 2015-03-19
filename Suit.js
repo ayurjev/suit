@@ -291,22 +291,54 @@ var SuitFilters = function() {
  */
 var SuitApi = function() {
     this.templates = {};
+
+    this.makeTemplateApi = function(cb) {
+        return function () {
+            var internal = {};
+            internal.ui = {};
+            internal.ui.body = $("body");
+            internal.error_controller = new suit.ErrorController();
+            internal.events_controller = new suit.EventsController();
+            internal.api = {};
+
+            if (cb) cb(internal);
+
+            internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); };
+            internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); };
+            internal.refresh = function(data) {
+                var html = suit.template(internal.self.attr("data-template-name")).execute(data);
+                var inner_containers = $(".data-container", internal.self);
+                var new_inner_containers = $(".data-container", $(html));
+                inner_containers.each(function(num, inner_container) {
+                    $(inner_container).html($(new_inner_containers[num]).html() || "");
+                });
+                suit.updateListeners();
+                internal.api._createListeners();
+            };
+            internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)};
+            internal.widget = function(data_template_name, host_container) {
+                var hc = host_container ? $(host_container, internal.self) : internal.self;
+                var widget = hc.find("[data-template-name='"+data_template_name+"']:first");
+                return widget.data("api");
+            };
+            if (!internal.api.refresh) internal.api.refresh = internal.refresh;
+            return internal.api;
+        }
+    };
+
     this.addTemplate = function(templateName, templateRenderCallback, initApiCallback) {
-        this.templates[templateName] = { render: templateRenderCallback, initApi: initApiCallback};
+        this.templates[templateName] = { render: templateRenderCallback, initApi: this.makeTemplateApi(initApiCallback)};
     };
 
     this.executeTemplate = function(templateName, data) {
         return this.templates[templateName].render(data || {});
     };
 
-    this.makeTemplateApi = function(templateName) {
-        return this.templates[templateName].initApi ? this.templates[templateName].initApi() : undefined;
-    };
-
     this.getTemplateApi = function(templateName) {
-        return $("body").find("[data-template-name='"+templateName+"']:first").data("api") || this.makeTemplateApi(templateName);
+        return $("body").find("[data-template-name='"+templateName+"']:first").data("api") || this.templates[templateName].initApi();
     };
 };
+
 suit = new Suit();
 suit.SuitRunTime = new SuitRunTime();
 suit.SuitFilters = new SuitFilters();
@@ -321,7 +353,7 @@ suit.updateListeners = function() {
         if (!$(this).attr("ui-container-loaded")) {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
-                var api = suit.SuitApi.makeTemplateApi(templateName);
+                var api = suit.SuitApi.templates[templateName].initApi();
                 if (api) api._register_self($(this));
                 if (api) api._createListeners();
                 $(this).attr("ui-container-loaded", true)

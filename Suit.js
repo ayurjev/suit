@@ -3,6 +3,7 @@ var Suit = function() {
     var events_listeners = {};
 
     this.on = function(initiator, event_name, selector, cb) {
+
         if (!events_listeners[initiator]) {
             events_listeners[initiator] = {};
         }
@@ -11,7 +12,7 @@ var Suit = function() {
         }
         for (var i = 0; i < events_listeners[initiator][event_name + selector].length; i++) {
             if (events_listeners[initiator][event_name + selector][i].toString() == cb.toString()) {
-                return;
+                if (initiator.prop("ui-container-loaded")) return;
             }
         }
         events_listeners[initiator][event_name + selector].push(cb);

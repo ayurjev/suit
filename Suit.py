@@ -535,12 +535,13 @@ class Template(object):
 
         # Build js
         jsCompiled = compiled["js"]
-        jsApiInit = self.js.strip() if self.js else "null"
-        jsSource = '''suit.SuitApi.addTemplate("%s", function(data) {
-           if (data == null) { data = {}; };
-           return %s
-        }, %s);
-            ''' % (self.templateName.replace(".html", "").replace("/", "."), jsCompiled, jsApiInit)
+        jsApiInit = self.js.strip() if self.js else ""
+        jsSource = 'suit.SuitApi.addTemplate({template}, {jsCompiled} {jsApiInit});\n'\
+            .format(
+                template='"%s"' % self.templateName.replace(".html", "").replace("/", "."),
+                jsCompiled='function(data) {data = data || {}; return %s}' % jsCompiled,
+                jsApiInit=', \n%s' % jsApiInit if jsApiInit else ''
+            )
 
         f = open("__js__/%s" % self.templateName.replace("/", "_").replace("html", "js"), "w+")
         f.writelines(jsSource)

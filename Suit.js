@@ -314,6 +314,9 @@ var SuitApi = function() {
                 var html = suit.template(internal.self.attr("data-template-name")).execute(data);
                 var inner_containers = $(".data-container", internal.self);
                 var new_inner_containers = $(".data-container", $(html));
+                if (inner_containers.length != new_inner_containers.length) {
+                    throw new Error("Ошибка композиции шаблонов: при выполнении метода refresh() кол-во data-container'ов не совпадает");
+                }
                 inner_containers.each(function(num, inner_container) {
                     $(inner_container).html($(new_inner_containers[num]).html() || "");
                 });

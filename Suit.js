@@ -12,9 +12,9 @@ var Suit = function() {
         }
         for (var i = 0; i < events_listeners[initiator][event_name + selector].length; i++) {
             if (events_listeners[initiator][event_name + selector][i].toString() == cb.toString()) {
-                try {
+                if (initiator.prop) {
                     if (initiator.prop("ui-container-loaded")) return;
-                } catch (TypeError) {
+                } else {
                     return;
                 }
             }

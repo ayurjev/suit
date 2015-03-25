@@ -310,16 +310,22 @@ var SuitApi = function() {
 
             internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); };
             internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); };
-            internal.refresh = function(data) {
+            internal.refresh = function(data, target_data_container_name) {
                 var html = suit.template(internal.self.attr("data-template-name")).execute(data);
                 var inner_containers = $(".data-container", internal.self);
-                var new_ui_container = $(html).filter('[data-template-name="'+internal.self.attr("data-template-name")+'"]');
+                var new_ui_container = ($(".ui-container", $(html)) || $(html)).filter('[data-template-name="'+internal.self.attr("data-template-name")+'"]');
                 var new_inner_containers = $(".data-container", new_ui_container);
                 if (inner_containers.length != new_inner_containers.length) {
                     throw new Error("Ошибка композиции шаблонов: при выполнении метода refresh() кол-во data-container'ов не совпадает");
                 }
                 inner_containers.each(function(num, inner_container) {
-                    $(inner_container).html($(new_inner_containers[num]).html() || "");
+                    if (target_data_container_name) {
+                        if ($(inner_container).attr("data-part-name") == $(new_inner_containers[num]).attr("data-part-name")) {
+                            $(inner_container).html($(new_inner_containers[num]).html() || "");
+                        }
+                    } else {
+                        $(inner_container).html($(new_inner_containers[num]).html() || "");
+                    }
                 });
                 suit.updateListeners();
                 internal.api._createListeners();

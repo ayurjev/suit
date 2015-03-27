@@ -313,7 +313,7 @@ var SuitApi = function() {
             internal.refresh = function(data) {
                 var html = suit.template(internal.self.attr("data-template-name")).execute(data);
                 var inner_containers = $(".data-container", internal.self);
-                var new_ui_container = $("[data-template-name='"+internal.self.attr("data-template-name")+"']:first", $(html));
+                var new_ui_container = $(html).filter('[data-template-name="'+internal.self.attr("data-template-name")+'"]');
                 var new_inner_containers = $(".data-container", new_ui_container);
                 if (inner_containers.length != new_inner_containers.length) {
                     throw new Error("Ошибка композиции шаблонов: при выполнении метода refresh() кол-во data-container'ов не совпадает");

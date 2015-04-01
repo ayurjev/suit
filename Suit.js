@@ -318,7 +318,20 @@ var SuitApi = function() {
                 if (inner_containers.length != new_inner_containers.length) {
                     throw new Error("Ошибка композиции шаблонов: при выполнении метода refresh() кол-во data-container'ов не совпадает");
                 }
+
+                /* Ищем все ui-container'ы внутри каждого data_container'a обновляемого шаблона и сохраним их api */
+                /* Это обязательно надо сделать в отдельном цикле each, чтобы избежать ерунды с ненужным замыканием */
+                var childs_ui_containers_api = {};
                 inner_containers.each(function(num, inner_container) {
+                    $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
+                        var old_api = $(child_ui_container).data("api");
+                        childs_ui_containers_api[$(child_ui_container).attr("data-template-name")] = {};
+                        childs_ui_containers_api[$(child_ui_container).attr("data-template-name")] = old_api;
+                    });
+                });
+
+                /* И в отдельном цикле мы меняем содержимое html-блоков, а потом ставим  им сохраненные ранее api */
+                $(".data-container", internal.self).each(function(num, inner_container) {
                     if (target_data_container_name) {
                         if ($(inner_container).attr("data-part-name") == $(new_inner_containers[num]).attr("data-part-name")) {
                             $(inner_container).html($(new_inner_containers[num]).html() || "");
@@ -326,6 +339,14 @@ var SuitApi = function() {
                     } else {
                         $(inner_container).html($(new_inner_containers[num]).html() || "");
                     }
+
+                    /* Возвращаем экземпляры api обратно в их ui-container'ы */
+                    $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
+                        if (childs_ui_containers_api[$(child_ui_container).attr("data-template-name")]) {
+                            $(child_ui_container).data("api", childs_ui_containers_api[$(child_ui_container).attr("data-template-name")]);
+                        }
+                    });
+
                 });
                 suit.updateListeners();
                 internal.api._createListeners();
@@ -368,7 +389,7 @@ suit.updateListeners = function() {
         if (!$(this).attr("ui-container-loaded")) {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
-                var api = suit.SuitApi.templates[templateName].initApi();
+                var api = $(this).data("api") || suit.SuitApi.templates[templateName].initApi();
                 if (api) api._register_self($(this));
                 if (api) api._createListeners();
                 $(this).attr("ui-container-loaded", true)

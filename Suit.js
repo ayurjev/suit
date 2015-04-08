@@ -333,7 +333,7 @@ var SuitApi = function() {
                 /* И в отдельном цикле мы меняем содержимое html-блоков, а потом ставим  им сохраненные ранее api */
                 $(".data-container", internal.self).each(function(num, inner_container) {
                     if (target_data_container_name) {
-                        if ($(inner_container).attr("data-part-name") == $(new_inner_containers[num]).attr("data-part-name")) {
+                        if ($(inner_container).attr("data-part-name") == $(new_inner_containers[num]).attr("data-part-name") && $(inner_container).attr("data-part-name") == target_data_container_name) {
                             $(inner_container).html($(new_inner_containers[num]).html() || "");
                         }
                     } else {

@@ -183,7 +183,8 @@ var SuitRunTime = function() {
     this.variable = function(lambdavar, default_or_null) {
         try {
             var res = lambdavar();
-            if (res === null || res === undefined) { return default_or_null; }
+            /* Проверка на null, undefined, NaN */
+            if (res === null || res === undefined || res !== res) { return default_or_null; }
             return res;
         } catch(e) { return default_or_null; }
     };

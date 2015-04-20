@@ -257,7 +257,7 @@ var SuitFilters = function() {
     };
 
     this.to_str = function(variable) {
-        return '\\"' + variable + '\\"'
+        return '"' + variable + '"'
     };
 
     this.int2str = function(obj) {

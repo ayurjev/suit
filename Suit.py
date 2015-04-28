@@ -303,6 +303,16 @@ class List(XmlTag):
             template
         )
 
+        template = re.sub(
+            '''>%s(.*?)<''' % self.iterval,
+            lambda m: ">%s[%s]%s<" % (
+                self.iterable_name,
+                self.iterkey if self.iterkey is not None else self.iterval,
+                m.group(1)
+            ),
+            template
+        )
+
         # iteration counter
         template = re.sub(
             "<var(?P<counter>(_\d+)?)>i</var(?P=counter)>",

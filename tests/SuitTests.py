@@ -18,7 +18,7 @@ from suit.Suit import XmlTag, PythonSyntax, JavascriptSyntax, Compiler, Suit, su
 
 # Получаем результат выполнения скомпилированного js кода
 # Для этого потребуется js-библиотека z9:
-with open("../Suit.js") as f:
+with open("%s/../Suit.js" % os.path.dirname(os.path.realpath(__file__))) as f:
     z9_suit_js = f.read()
 
 
@@ -144,7 +144,7 @@ class SuitTest(unittest.TestCase):
         #     json.dumps(data, default=json_dumps_handler)
         # ))
 
-        sp = subprocess.Popen('''java -cp . RunScriptDemo 'current.js' ''', shell=True, stdout=subprocess.PIPE, cwd=os.path.dirname(__file__))
+        sp = subprocess.Popen('''java -cp . RunScriptDemo 'current.js' ''', shell=True, stdout=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
         res = ""
         s = True
         while s:

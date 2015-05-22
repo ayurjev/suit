@@ -64,6 +64,38 @@ var Suit = function() {
     };
 
     /**
+     * Upload with usage of FormData
+     * @param url
+     * @param data
+     * @param cb
+     * @param error_suppression
+     * @returns {{}}
+     */
+    this.ajax_upload = function (url, data, cb, error_suppression) {
+        var responseData = {};
+        var form_data = new FormData();
+        $.each(data, function (key, value) {
+            form_data.append(key, value);
+        });
+
+        $.ajax({
+            url:        url,
+            async:      !!cb,
+            type:       "POST",
+            dataType:   "json",
+            data:       form_data,
+            contentType: false,
+            processData: false
+        })
+        .done(function(data){ responseData = data; })
+        .done(function(data) {
+                if (cb && cb(data) !== false && (!error_suppression || error_suppression(data) !== true))
+                suit.events_controller.broadcast("XHR_Request_Completed", data, error_suppression)})
+        .fail(function() { suit.events_controller.broadcast("UnknownError") });
+        return responseData;
+    };
+
+    /**
      * Makes a query to the backend with pjax-query
      * @param container Container for binding callbacks (execution context)
      * @param url       URL of the controller

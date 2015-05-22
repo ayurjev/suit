@@ -240,6 +240,14 @@ var SuitRunTime = function() {
         } catch(e) { return default_or_null; }
     };
 
+    this.include = function(template_name, data_func, template_part_to_become_scope_data) {
+        var data = data_func();
+        var scope_data = JSON.parse(suit.template(template_part_to_become_scope_data).execute(data));
+        for (var key in scope_data) {
+            data.key = scope_data.key;
+        }
+        return suit.template(template_name).execute(data);
+    };
 
     this.opt = function(condition, trueblock, falseblock) {
         if (condition.indexOf("\\") > -1)

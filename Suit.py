@@ -348,9 +348,7 @@ class Breakpoint(XmlTag):
         self.isInclude = self.attributes.get("include") is not None
         self.template_name = self.attributes.get("include")
         self.content = TemplatePart(self.body)
-        self.template_data = TemplatePart(
-            self.attributes.get("data")
-        ) if self.attributes.get("data") is not None else None
+        self.template_data = lambda d: tag_string.replace(self.body, "")
 
 
 SuitTagsMap = {
@@ -509,7 +507,7 @@ class Template(object):
     def include(self):
         """ Includes all sub templates if template contains <breakpoint> tags with 'include' attribute """
         self.content = re.sub(
-            '(<breakpoint(?P<brcount>(?:_\d+)?) include=(.+?)(?:\s.+?)*>.*</breakpoint(?P=brcount)>)',
+            '(<breakpoint(?P<brcount>(?:_\d+)?) include=(.+?)(?:\s.+?)*></breakpoint(?P=brcount)>)',
             lambda m: Template(m.group(3).strip("'").strip("\"").replace(".", "/") + ".html").getContent(),
             self.content
         )
@@ -603,7 +601,10 @@ class Syntax(metaclass=ABCMeta):
             return self.expression(self.compile(tag.expresion_body.getDataForCompile()))
 
         elif isinstance(tag, Breakpoint):
-            return self.compile(tag.content.getDataForCompile())
+            if tag.body:
+                return self.include(tag.template_name, tag.body)
+            else:
+                return self.compile(tag.content.getDataForCompile())
 
         else:
             raise None
@@ -618,6 +619,10 @@ class Syntax(metaclass=ABCMeta):
 
     @abstractmethod
     def var(self, var_name, filters=None, default=None, without_stringify=False):
+        pass
+
+    @abstractmethod
+    def include(self, bp_name, bp_body):
         pass
 
     @abstractmethod
@@ -666,6 +671,9 @@ class PythonSyntax(Syntax):
 
     def convertplaceholders(self, template):
         return re.sub("\{\{ph:\d+\}\}", "%s", template)
+
+    def include(self, bp_name, bp_body):
+        return "SuitRunTime.include('%s', lambda: self.data, '%s')" % (bp_name, bp_body)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -726,6 +734,9 @@ class JavascriptSyntax(Syntax):
 
     def convertplaceholders(self, template):
         return re.sub('\{\{ph:(\d+)\}\}', lambda m: "{%s}" % m.group(1), template)
+
+    def include(self, bp_name, bp_body):
+        return "suit.SuitRunTime.include('%s', function() { return data }, '%s')" % (bp_name, bp_body)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -903,17 +914,23 @@ class Suit(object):
     Suit execution wrapper
     """
     def __init__(self, path):
-        path = path.split(".")
-        self.template = None
-        for i in range(len(path)):
-            cpath = "%s/__py__/" % "/".join(path[:len(path)-i])
-            if os.path.isdir(cpath):
-                template_name_part = "_".join(path[len(path)-i:])
-                module = importlib.import_module("%s%s" % (cpath.replace("/", "."), template_name_part))
-                template_class = getattr(module, template_name_part)
-                self.template = template_class()
-        if not self.template:
-            raise TemplateNotFound("template not found")
+        if not path.startswith("{"):
+            path = path.split(".")
+            self.template = None
+            for i in range(len(path)):
+                cpath = "%s/__py__/" % "/".join(path[:len(path)-i])
+                if os.path.isdir(cpath):
+                    template_name_part = "_".join(path[len(path)-i:])
+                    module = importlib.import_module("%s%s" % (cpath.replace("/", "."), template_name_part))
+                    template_class = getattr(module, template_name_part)
+                    self.template = template_class()
+            if not self.template:
+                raise TemplateNotFound("template not found")
+        else:
+            template_part = TemplatePart(path)
+            compiled = PythonSyntax().compile(template_part.getDataForCompile())
+            self.template = lambda self: eval(compiled)
+
 
     def execute(self, data=None):
         """
@@ -923,7 +940,12 @@ class Suit(object):
         """
         if data is None:
             data = {}
-        return self.template.execute(data)
+        if hasattr(self.template, "execute"):
+            return self.template.execute(data)
+        else:
+            # noinspection PyAttributeOutsideInit
+            self.data = data
+            return self.template(self)
 
 
 def suit(templateName):
@@ -1008,6 +1030,13 @@ class SuitRunTime(object):
         :return:                    result of evaluation
         """
         return eval(expression)
+
+    @staticmethod
+    def include(template_name, main_data, datatemplate_part_to_become_data):
+        main_data = main_data()
+        scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(main_data))
+        main_data.update(scope_data)
+        return Suit("views.%s" % template_name).execute(main_data)
 
 
 class SuitFilters(object):

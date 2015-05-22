@@ -304,11 +304,11 @@ class List(XmlTag):
         )
 
         template = re.sub(
-            '''>%s(.*?)<''' % self.iterval,
+            '''>%s(\..+?)?<''' % self.iterval,
             lambda m: ">%s[%s]%s<" % (
                 self.iterable_name,
                 self.iterkey if self.iterkey is not None else self.iterval,
-                m.group(1)
+                m.group(1) if m.group(1) else ""
             ),
             template
         )
@@ -545,12 +545,12 @@ class Template(object):
 
         # Build js
         jsCompiled = compiled["js"]
-        jsApiInit = self.js.strip() if self.js else ""
-        jsSource = 'suit.SuitApi.addTemplate({template}, {jsCompiled} {jsApiInit});\n'\
+        jsApiInit = self.js.strip() if self.js else "null"
+        jsSource = 'suit.SuitApi.addTemplate({template}, {jsCompiled}, {jsApiInit});\n'\
             .format(
                 template='"%s"' % self.templateName.replace(".html", "").replace("/", "."),
                 jsCompiled='function(data) {data = data || {}; return %s}' % jsCompiled,
-                jsApiInit=', \n%s' % jsApiInit if jsApiInit else ''
+                jsApiInit=jsApiInit
             )
 
         f = open("__js__/%s" % self.templateName.replace("/", "_").replace("html", "js"), "w+")

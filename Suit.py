@@ -736,7 +736,10 @@ class JavascriptSyntax(Syntax):
         return re.sub('\{\{ph:(\d+)\}\}', lambda m: "{%s}" % m.group(1), template)
 
     def include(self, bp_name, bp_body):
-        return "suit.SuitRunTime.include('%s', function() { return data }, '%s')" % (bp_name, bp_body)
+        template_part = TemplatePart(bp_body)
+        compiled = self.compile(template_part.getDataForCompile())
+        compiled = '''function(data) { return %s ; }''' % compiled
+        return "suit.SuitRunTime.include('%s', function() { return data }, %s)" % (bp_name, compiled)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -1033,10 +1036,12 @@ class SuitRunTime(object):
 
     @staticmethod
     def include(template_name, main_data, datatemplate_part_to_become_data):
+        from copy import deepcopy
         main_data = main_data()
         scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(main_data))
-        main_data.update(scope_data)
-        return Suit("views.%s" % template_name).execute(main_data)
+        new_data = deepcopy(main_data)
+        new_data.update(scope_data)
+        return Suit("views.%s" % template_name).execute(new_data)
 
 
 class SuitFilters(object):

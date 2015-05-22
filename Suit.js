@@ -2,15 +2,34 @@
 var Suit = function() {
     var events_listeners = {};
 
+    this.universal_id = function (that) {
+        if (that.id) return that.id;
+
+        if (that.jquery) {
+            if (that.attr("data-template-name")) {
+                return that.attr("data-template-name")
+            }
+
+            if (that.selector) {
+                return that.selector
+            }
+        }
+        return that;
+    };
+
     this.on = function(initiator, event_name, selector, cb) {
-        if (!events_listeners[initiator]) {
-            events_listeners[initiator] = {};
+        var initiator_id = this.universal_id(initiator);
+        var selector_id = this.universal_id(selector);
+        var event_id = "[" + selector_id + "]" + event_name;
+
+        if (!events_listeners[initiator_id]) {
+            events_listeners[initiator_id] = {};
         }
-        if (!events_listeners[initiator][event_name + selector]) {
-            events_listeners[initiator][event_name + selector] = [];
+        if (!events_listeners[initiator_id][event_id]) {
+            events_listeners[initiator_id][event_id] = [];
         }
-        for (var i = 0; i < events_listeners[initiator][event_name + selector].length; i++) {
-            if (events_listeners[initiator][event_name + selector][i].toString() == cb.toString()) {
+        for (var i = 0; i < events_listeners[initiator_id][event_id].length; i++) {
+            if (events_listeners[initiator_id][event_id][i].toString() == cb.toString()) {
                 if (initiator.attr) {
                     if (initiator.attr("ui-container-loaded")) return;
                 } else {
@@ -19,7 +38,7 @@ var Suit = function() {
             }
         }
 
-        events_listeners[initiator][event_name + selector].push(cb);
+        events_listeners[initiator_id][event_id].push(cb);
         initiator.on(event_name, selector, cb);
     };
 
@@ -333,18 +352,23 @@ var SuitFilters = function() {
  */
 var SuitApi = function() {
     this.templates = {};
+    var unique_api_id = 1;
 
     this.makeTemplateApi = function(cb) {
         return function () {
             var internal = {};
+            var id = unique_api_id++;
             internal.ui = {};
             internal.ui.body = $("body");
             internal.error_controller = new suit.ErrorController();
             internal.events_controller = new suit.EventsController();
+            internal.error_controller.id = "error_controller." + id;
+            internal.events_controller.id = "events_controller." + id;
             internal.api = {};
 
             if (cb) cb(internal);
 
+            internal.api.id = "api." + id;
             internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); };
             internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); };
             internal.refresh = function(data, target_data_container_name) {
@@ -418,6 +442,8 @@ suit.SuitFilters = new SuitFilters();
 suit.SuitApi = new SuitApi();
 suit.events_controller = new suit.EventsController();
 suit.error_controller = new suit.ErrorController();
+suit.events_controller.id = "suit.EventsController";
+suit.error_controller.id = "suit.ErrorController";
 suit.updateListeners = function() {
     var load = function() {
         if ($(this).find(".ui-container").length) {

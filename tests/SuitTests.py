@@ -980,20 +980,7 @@ class SuitTest(unittest.TestCase):
         js_written = "".join(f.readlines())
         f.close()
         expected = '''
-            suit.SuitApi.addTemplate("subfolder.template8", function(data) {
-                if (data == null) { data = {}; };
-                return "<div id=\\"target\\">some content</div><script src=\\"something\\"></script>"
-            }, function() {
-            var internal = {};
-            internal.ui = {};
-            internal.ui.body = $("body");
-            internal.error_controller = new suit.ErrorController();
-            internal.events_controller = new suit.EventsController();
-            internal.self = "[data-template-name='subfolder.template8'].ui-container";
-            internal.api = {};
-            var api = (function() { return { sayHello: function() { alert("Hello"); } } })(internal).api;
-            api._createListeners = function() { if (!suit.SuitApi.templates["subfolder.template8"].inited) { suit.SuitApi.templates["subfolder.template8"].inited = true; api.createListeners(); }}
-            return api; });
+            suit.SuitApi.addTemplate("subfolder.template8", function(data) { if (data == null) { data = {}; }; return "<div id=\"target\">some content</div><script src=\"something\"></script>" }, function() { var internal = {}; internal.ui = {}; internal.ui.body = $("body"); internal.error_controller = new suit.ErrorController(); internal.events_controller = new suit.EventsController(); internal.api = {}; (function() { return { sayHello: function() { alert("Hello"); } } })(internal); internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); } internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); } internal.refresh = function(data) { var html = suit.template(internal.self.attr("data-template-name")).execute(data); var inner_containers = $(".data-container", internal.self); var new_inner_containers = $(".data-container", $(html)); inner_containers.each(function(num, inner_container) { $(inner_container).html($(new_inner_containers[num]).html() || ""); }); suit.updateListeners(); internal.api._createListeners(); } internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)}; internal.widget = function(data_template_name, host_container) { var hc = host_container ? $(host_container, internal.self) : internal.self; var widget = hc.find("[data-template-name='"+data_template_name+"']:first"); return widget.data("api"); }; if (!internal.api.refresh) internal.api.refresh = internal.refresh; return internal.api; });
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
         #self.assertEqual(expected, js_written)
@@ -1154,20 +1141,7 @@ class SuitTest(unittest.TestCase):
         js_written = "".join(f.readlines())
         f.close()
         expected = '''
-            suit.SuitApi.addTemplate("subfolder.mainTemplate2", function(data) {
-                if (data == null) { data = {}; };
-                return "<div>main</div>"
-            }, function() {
-            var internal = {};
-            internal.ui = {};
-            internal.ui.body = $("body");
-            internal.error_controller = new suit.ErrorController();
-            internal.events_controller = new suit.EventsController();
-            internal.self = "[data-template-name='subfolder.mainTemplate2'].ui-container";
-            internal.api = {};
-            var api = (function() { return { sayHello: function() { alert("Hello"); } } })(internal).api;
-            api._createListeners = function() { if (!suit.SuitApi.templates["subfolder.mainTemplate2"].inited) { suit.SuitApi.templates["subfolder.mainTemplate2"].inited = true; api.createListeners(); }}
-            return api; });
+            suit.SuitApi.addTemplate("subfolder.mainTemplate2", function(data) { if (data == null) { data = {}; }; return "<div>main</div>" }, function() { var internal = {}; internal.ui = {}; internal.ui.body = $("body"); internal.error_controller = new suit.ErrorController(); internal.events_controller = new suit.EventsController(); internal.api = {}; (function() { return { sayHello: function() { alert("Hello"); } } })(internal); internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); } internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); } internal.refresh = function(data) { var html = suit.template(internal.self.attr("data-template-name")).execute(data); var inner_containers = $(".data-container", internal.self); var new_inner_containers = $(".data-container", $(html)); inner_containers.each(function(num, inner_container) { $(inner_container).html($(new_inner_containers[num]).html() || ""); }); suit.updateListeners(); internal.api._createListeners(); } internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)}; internal.widget = function(data_template_name, host_container) { var hc = host_container ? $(host_container, internal.self) : internal.self; var widget = hc.find("[data-template-name='"+data_template_name+"']:first"); return widget.data("api"); }; if (!internal.api.refresh) internal.api.refresh = internal.refresh; return internal.api; });
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
 
@@ -1188,20 +1162,7 @@ class SuitTest(unittest.TestCase):
         js_written = "".join(f.readlines())
         f.close()
         expected = '''
-            suit.SuitApi.addTemplate("subfolder.templateChild", function(data) {
-                if (data == null) { data = {}; };
-                return "<div>main</div>"
-            }, function() {
-            var internal = {};
-            internal.ui = {};
-            internal.ui.body = $("body");
-            internal.error_controller = new suit.ErrorController();
-            internal.events_controller = new suit.EventsController();
-            internal.self = "[data-template-name='subfolder.templateChild'].ui-container";
-            internal.api = {};
-            var api = (function(internal) { return { sayHello: function() { alert("Hello from child template"); } } })(internal).api;
-            api._createListeners = function() { if (!suit.SuitApi.templates["subfolder.templateChild"].inited) { suit.SuitApi.templates["subfolder.templateChild"].inited = true; api.createListeners(); }}
-            return api; });
+            suit.SuitApi.addTemplate("subfolder.templateChild", function(data) { if (data == null) { data = {}; }; return "<div>main</div>" }, function() { var internal = {}; internal.ui = {}; internal.ui.body = $("body"); internal.error_controller = new suit.ErrorController(); internal.events_controller = new suit.EventsController(); internal.api = {}; (function(internal) { return { sayHello: function() { alert("Hello from child template"); } } })(internal); internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); } internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); } internal.refresh = function(data) { var html = suit.template(internal.self.attr("data-template-name")).execute(data); var inner_containers = $(".data-container", internal.self); var new_inner_containers = $(".data-container", $(html)); inner_containers.each(function(num, inner_container) { $(inner_container).html($(new_inner_containers[num]).html() || ""); }); suit.updateListeners(); internal.api._createListeners(); } internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)}; internal.widget = function(data_template_name, host_container) { var hc = host_container ? $(host_container, internal.self) : internal.self; var widget = hc.find("[data-template-name='"+data_template_name+"']:first"); return widget.data("api"); }; if (!internal.api.refresh) internal.api.refresh = internal.refresh; return internal.api; });
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
 

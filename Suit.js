@@ -287,7 +287,11 @@ var SuitFilters = function() {
 
     this.usebr = function(text) {
         return text.replace("\n", "<br />");
-    }
+    };
+
+    this.values = function(haystask) {
+        return Object.keys(haystask).map(function(key){return haystask[key]})
+    };
 
 };
 

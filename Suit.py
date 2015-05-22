@@ -601,7 +601,7 @@ class Syntax(metaclass=ABCMeta):
             return self.expression(self.compile(tag.expresion_body.getDataForCompile()))
 
         elif isinstance(tag, Breakpoint):
-            if tag.body:
+            if tag.body and tag.body.startswith("{"):
                 return self.include(tag.template_name, tag.body)
             else:
                 return self.compile(tag.content.getDataForCompile())

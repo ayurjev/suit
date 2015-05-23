@@ -1,2 +1,6 @@
 *.idea*
 *__pycache__
+tests/__css__*
+tests/__js__*
+tests/__py__*
+tests/views*

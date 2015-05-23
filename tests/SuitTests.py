@@ -83,7 +83,6 @@ class SuitTest(unittest.TestCase):
         :param debug:               Режим отладки (При включенном режиме отладки печатается промежуточный код)
 
         """
-
         # Записываем шаблон во временный файл:
         fileName = name or hashlib.md5((template + str(datetime.now())).encode()).hexdigest()
         self.assertFalse(os.path.isfile("views/subfolder/%s.html" % fileName))
@@ -95,6 +94,7 @@ class SuitTest(unittest.TestCase):
         # Компилируем все имеющиеся шаблоны
         os.chdir("views")
         self.c.compile()
+        self.c.build()
         os.chdir("../")
         if debug:
             # Получаем скомпилированный python ход
@@ -109,16 +109,14 @@ class SuitTest(unittest.TestCase):
         executed_python = filterForExecuted(executed_python) if filterForExecuted is not None else executed_python
 
         # Получаем скомпилированный js код
-        f = open("views/__js__/subfolder_%s.js" % fileName)
+        f = open("views/__js__/all.js")
         compiled_javascript = "".join(f.readlines())
         f.close()
         compiled_javascript = re.sub("\s\s+", "", compiled_javascript).replace("\n", "").rstrip(";")
-
-        compiled_javascript = re.search("return (.+)},", compiled_javascript, re.DOTALL).group(1)
         if debug:
             print("JS: ", compiled_javascript)
 
-        executed_javascript = self.executeJavascript(z9_suit_js, compiled_javascript, data)
+        executed_javascript = self.executeJavascript(z9_suit_js + compiled_javascript + ";", fileName, data)
         executed_javascript = filterForExecuted(
             executed_javascript
         ) if filterForExecuted is not None else executed_javascript
@@ -130,11 +128,11 @@ class SuitTest(unittest.TestCase):
         checker(expected, executed_python)
         checker(expected, executed_javascript)
 
-    def executeJavascript(self, z9source, compiled, data):
+    def executeJavascript(self, z9source, tn, data):
         with open("current.js", "w+") as f:
             f.write(
                 '''%s(%s)''' % (
-                    '''(function(data) {%s print(%s);})''' % (z9source, compiled),
+                    '''(function(data) {%s print(suit.template("subfolder.%s").execute(data));})''' % (z9source, tn),
                     json.dumps(data, default=json_dumps_handler)
                 )
             )
@@ -1153,6 +1151,46 @@ class SuitTest(unittest.TestCase):
             suit.SuitApi.addTemplate("subfolder.templateChild", function(data) {data = data || {}; return "<div>main</div>"}, (function(internal) { return { sayHello: function() { alert("Hello from child template"); } } }));
         '''
         self.assertEqual(trimSpaces(expected), trimSpaces(js_written))
+
+    ################################### Включение шаблонов с передачей данных:
+
+    def test_breakPoint_include_with_params(self):
+        """ Тестируем включение шаблонов с передачей в них параметров """
+        inc_template = '''-<var>a</var>-'''
+        template1 = '''a=<var>a</var>: 1<breakpoint include="subfolder.inc_template"></breakpoint>3'''
+        template2 = '''a=<var>a</var>: 1<breakpoint include="subfolder.inc_template">{"a": 0}</breakpoint>3'''
+        template3 = '''a=<var>a</var>: 1<breakpoint include="subfolder.inc_template">{"a": <var>a</var>}</breakpoint>3'''
+
+        # Проверим включаемый шаблон (особого интереса не представляет)
+        self.simulate(inc_template, "-1-", {"a": 1}, name="inc_template")
+        self.simulate(inc_template, "-2-", {"a": 2}, name="inc_template2")
+
+        # template_1 содержит традиционное включение (в рамках этого теста тоже интереса не много)
+        self.simulate(template1, "a=1: 1-1-3", {"a": 1})
+        self.simulate(template1, "a=2: 1-2-3", {"a": 2})
+
+        # А вот template_2 - самое интересное:
+        self.simulate(template2, "a=1: 1-0-3", {"a": 1})
+        self.simulate(template2, "a=2: 1-0-3", {"a": 2})
+
+        # И шаблон template_3 еще интереснее:
+        self.simulate(template3, "a=1: 1-1-3", {"a": 1})
+        self.simulate(template3, "a=2: 1-2-3", {"a": 2})
+        self.simulate(template3, "a=4: 1-4-3", {"a": 4})
+
+    def test_breakPoint_include_with_params_in_list(self):
+        """ Тестируем включение шаблонов и передачу в них параметров из переменных цикла """
+        inc_template = '''-<var>a</var>-'''
+        list_template1 = '''<list for="user" in="users"><breakpoint include="subfolder.inc_template"></breakpoint></list>'''
+        list_template2 = '''<list for="user" in="users"><breakpoint include="subfolder.inc_template">{"a": "<var>user</var>"}</breakpoint></list>'''
+
+        # Проверим включаемый шаблон (особого интереса не представляет)
+        self.simulate(inc_template, "-1-", {"a": 1}, name="inc_template")
+        self.simulate(inc_template, "-2-", {"a": 2}, name="inc_template2")
+
+        # Проверим обычную (сквозную передачу параметра из контроллера во включаемый шаблон:
+        self.simulate(list_template1, "-1--1-", {"users": ["Andrey", "Nikolay"], "a": 1})
+        self.simulate(list_template2, "-Andrey--Nikolay-", {"users": ["Andrey", "Nikolay"], "a": 1})
 
     # ################################# Регрессионные тесты альфа-тестирования ##################################
 

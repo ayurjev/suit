@@ -131,27 +131,15 @@ class SuitTest(unittest.TestCase):
         checker(expected, executed_javascript)
 
     def executeJavascript(self, z9source, compiled, data):
-        f = open("current.js", "w+")
-        f.writelines(
-            '''%s(%s)''' % (
-                '''(function(data) {%s print(%s);})''' % (z9source, compiled),
-                json.dumps(data, default=json_dumps_handler)
+        with open("current.js", "w+") as f:
+            f.write(
+                '''%s(%s)''' % (
+                    '''(function(data) {%s print(%s);})''' % (z9source, compiled),
+                    json.dumps(data, default=json_dumps_handler)
+                )
             )
-        )
-        f.close()
-        # print('''%s(%s)''' % (
-        #     '''(function(data) {%s print(%s);})''' % (z9source, compiled),
-        #     json.dumps(data, default=json_dumps_handler)
-        # ))
-
-        sp = subprocess.Popen('''java -cp . RunScriptDemo 'current.js' ''', shell=True, stdout=subprocess.PIPE, cwd=os.path.dirname(os.path.realpath(__file__)))
-        res = ""
-        s = True
-        while s:
-            s = sp.stdout.readline()
-            res += s.decode('utf-8')
-        sp.stdout.close()
-        return res.strip()
+        res = subprocess.check_output('''java -Xms8m -Xmx8M -cp . RunScriptDemo 'current.js' ''', shell=True, cwd=os.path.dirname(os.path.realpath(__file__)))
+        return res.decode('utf-8').strip()
 
     ################ Фильтры для унификации ответов при разнице, которой можно пренебречь ###########
 

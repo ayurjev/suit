@@ -167,11 +167,8 @@ class SuitTest(unittest.TestCase):
         m = m.replace("null", "SuitNone()")
         return m
 
-    def test_breakPoint_include(self):
-        """
-        Сделаем простое включение одного шаблона в другой
-
-        """
+    def test_breakPoint_include_with_params(self):
+        """ Тестируем включение шаблонов с передачей в них параметров """
         inc_template = '''-<var>a</var>-'''
         template1 = '''a=<var>a</var>: 1<breakpoint include="subfolder.inc_template"></breakpoint>3'''
         template2 = '''a=<var>a</var>: 1<breakpoint include="subfolder.inc_template">{"a": 0}</breakpoint>3'''
@@ -194,6 +191,19 @@ class SuitTest(unittest.TestCase):
         self.simulate(template3, "a=2: 1-2-3", {"a": 2})
         self.simulate(template3, "a=4: 1-4-3", {"a": 4})
 
+    def test_breakPoint_include_with_params_in_list(self):
+        """ Тестируем включение шаблонов и передачу в них параметров из переменных цикла """
+        inc_template = '''-<var>a</var>-'''
+        list_template1 = '''<list for="user" in="users"><breakpoint include="subfolder.inc_template"></breakpoint></list>'''
+        list_template2 = '''<list for="user" in="users"><breakpoint include="subfolder.inc_template">{"a": "<var>user</var>"}</breakpoint></list>'''
+
+        # Проверим включаемый шаблон (особого интереса не представляет)
+        self.simulate(inc_template, "-1-", {"a": 1}, name="inc_template")
+        self.simulate(inc_template, "-2-", {"a": 2}, name="inc_template2")
+
+        # Проверим обычную (сквозную передачу параметра из контроллера во включаемый шаблон:
+        self.simulate(list_template1, "-1--1-", {"users": ["Andrey", "Nikolay"], "a": 1})
+        self.simulate(list_template2, "-Andrey--Nikolay-", {"users": ["Andrey", "Nikolay"], "a": 1})
 
 
 

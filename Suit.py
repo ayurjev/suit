@@ -673,7 +673,7 @@ class PythonSyntax(Syntax):
         return re.sub("\{\{ph:\d+\}\}", "%s", template)
 
     def include(self, bp_name, bp_body):
-        return "SuitRunTime.include('%s', lambda: self.data, '%s')" % (bp_name, bp_body)
+        return "SuitRunTime.include(None, None, '%s', lambda: self.data, '%s')" % (bp_name, bp_body)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -694,6 +694,7 @@ class PythonSyntax(Syntax):
         return '''SuitRunTime.opt(%s, lambda: %s, lambda: %s)''' % (condition, true, false if false else "")
 
     def list(self, template, itervar, iterable):
+        template = template.replace('SuitRunTime.include(None, None, ', 'SuitRunTime.include("%s", %s, ' % (itervar, itervar))
         return '''SuitRunTime.list(lambda %s: %s, %s)''' % (itervar, template, iterable)
 
     def expression(self, expression):
@@ -739,7 +740,7 @@ class JavascriptSyntax(Syntax):
         template_part = TemplatePart(bp_body)
         compiled = self.compile(template_part.getDataForCompile())
         compiled = '''function(data) { return %s ; }''' % compiled
-        return "suit.SuitRunTime.include('%s', function() { return data }, %s)" % (bp_name, compiled)
+        return "suit.SuitRunTime.include(null, null, '%s', function() { return data }, %s)" % (bp_name, compiled)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -755,6 +756,7 @@ class JavascriptSyntax(Syntax):
         return 'suit.SuitRunTime.opt(%s, function() {return (%s)}, function() {return (%s)})' % (condition, true, false)
 
     def list(self, template, itervar, iterable):
+        template = template.replace('suit.SuitRunTime.include(null, null, ', 'suit.SuitRunTime.include("%s", %s, ' % (itervar, itervar))
         return '''suit.SuitRunTime.list(function(%s) { return %s; }, (%s))''' % (
             itervar, template.replace(".%s)" % itervar, "[%s])" % itervar), iterable)
 
@@ -932,8 +934,8 @@ class Suit(object):
         else:
             template_part = TemplatePart(path)
             compiled = PythonSyntax().compile(template_part.getDataForCompile())
-            self.template = lambda self: eval(compiled)
-
+            self.template = "lambda self: %s" % compiled
+            self.template = re.sub('\[itervar_(.+?)\]', lambda m: '[self.data["itervar_%s"]]' % m.group(1), self.template)
 
     def execute(self, data=None):
         """
@@ -948,7 +950,7 @@ class Suit(object):
         else:
             # noinspection PyAttributeOutsideInit
             self.data = data
-            return self.template(self)
+            return eval(self.template)(self)
 
 
 def suit(templateName):
@@ -1035,11 +1037,14 @@ class SuitRunTime(object):
         return eval(expression)
 
     @staticmethod
-    def include(template_name, main_data, datatemplate_part_to_become_data):
+    def include(itervar_name, itervar_value, template_name, main_data, datatemplate_part_to_become_data):
         from copy import deepcopy
         main_data = main_data()
-        scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(main_data))
         new_data = deepcopy(main_data)
+        if itervar_name:
+            new_data["itervar_%s" % itervar_name] = itervar_value
+        datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % itervar_name, '[itervar_%s]' % itervar_name)
+        scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data))
         new_data.update(scope_data)
         return Suit("views.%s" % template_name).execute(new_data)
 

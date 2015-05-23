@@ -673,7 +673,7 @@ class PythonSyntax(Syntax):
         return re.sub("\{\{ph:\d+\}\}", "%s", template)
 
     def include(self, bp_name, bp_body):
-        return "SuitRunTime.include(None, None, '%s', lambda: self.data, '%s')" % (bp_name, bp_body)
+        return "SuitRunTime.include({}, '%s', lambda: self.data, '%s')" % (bp_name, bp_body)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -694,7 +694,13 @@ class PythonSyntax(Syntax):
         return '''SuitRunTime.opt(%s, lambda: %s, lambda: %s)''' % (condition, true, false if false else "")
 
     def list(self, template, itervar, iterable):
-        template = template.replace('SuitRunTime.include(None, None, ', 'SuitRunTime.include("%s", %s, ' % (itervar, itervar))
+        inc_data = re.search("SuitRunTime.include\(({.*?}), ", template, re.DOTALL)
+        inc_data = inc_data.group(1) if inc_data else "{}"
+        new_inc_data = inc_data
+        if inc_data:
+            iter_addition = '''"%s": %s''' % (itervar, itervar)
+            new_inc_data = '{%s}' % iter_addition if len(inc_data) == 2 else inc_data.rstrip("}") + ", " + iter_addition  + "}"
+        template = template.replace("SuitRunTime.include(%s, " % inc_data, "SuitRunTime.include(%s, " % new_inc_data)
         return '''SuitRunTime.list(lambda %s: %s, %s)''' % (itervar, template, iterable)
 
     def expression(self, expression):
@@ -740,7 +746,7 @@ class JavascriptSyntax(Syntax):
         template_part = TemplatePart(bp_body)
         compiled = self.compile(template_part.getDataForCompile())
         compiled = '''function(data) { return %s ; }''' % compiled
-        return "suit.SuitRunTime.include(null, null, '%s', function() { return data }, %s)" % (bp_name, compiled)
+        return "suit.SuitRunTime.include({}, '%s', function() { return data }, %s)" % (bp_name, compiled)
 
     def var(self, var_name, filters=None, default=None, without_stringify=False):
         if filters is None:
@@ -756,7 +762,14 @@ class JavascriptSyntax(Syntax):
         return 'suit.SuitRunTime.opt(%s, function() {return (%s)}, function() {return (%s)})' % (condition, true, false)
 
     def list(self, template, itervar, iterable):
-        template = template.replace('suit.SuitRunTime.include(null, null, ', 'suit.SuitRunTime.include("%s", %s, ' % (itervar, itervar))
+        inc_data = re.search("suit.SuitRunTime.include\(({.*?}), ", template, re.DOTALL)
+        inc_data = inc_data.group(1) if inc_data else "{}"
+        new_inc_data = inc_data
+        if inc_data:
+            iter_addition = '''"%s": %s''' % (itervar, itervar)
+            new_inc_data = '{%s}' % iter_addition if len(inc_data) == 2 else inc_data.rstrip("}") + ", " + iter_addition  + "}"
+        template = template.replace("suit.SuitRunTime.include(%s, " % inc_data, "suit.SuitRunTime.include(%s, " % new_inc_data)
+
         return '''suit.SuitRunTime.list(function(%s) { return %s; }, (%s))''' % (
             itervar, template.replace(".%s)" % itervar, "[%s])" % itervar), iterable)
 
@@ -1037,13 +1050,13 @@ class SuitRunTime(object):
         return eval(expression)
 
     @staticmethod
-    def include(itervar_name, itervar_value, template_name, main_data, datatemplate_part_to_become_data):
+    def include(iter_dict, template_name, main_data, datatemplate_part_to_become_data):
         from copy import deepcopy
         main_data = main_data()
         new_data = deepcopy(main_data)
-        if itervar_name:
-            new_data["itervar_%s" % itervar_name] = itervar_value
-        datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % itervar_name, '[itervar_%s]' % itervar_name)
+        for key in iter_dict:
+            new_data["itervar_%s" % key] = iter_dict[key]
+            datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % key, '[itervar_%s]' % key)
         scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data))
         new_data.update(scope_data)
         return Suit("views.%s" % template_name).execute(new_data)

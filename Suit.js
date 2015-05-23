@@ -240,14 +240,16 @@ var SuitRunTime = function() {
         } catch(e) { return default_or_null; }
     };
 
-    this.include = function(itervar_name, itervar_value, template_name, data_func, template_part_to_become_scope_data) {
+    this.include = function(iter_dict, template_name, data_func, template_part_to_become_scope_data) {
         var main_data = data_func();
         var scope_data = JSON.parse(template_part_to_become_scope_data(main_data));
         var new_data = main_data;
         for (var key in scope_data) {
             new_data[key] = scope_data[key];
         }
-        new_data["itervar_%s" % itervar_name] = itervar_value;
+        for (var iter_key in iter_dict) {
+            new_data["itervar_%s" % iter_key] = iter_dict[iter_key];
+        }
         return suit.template(template_name).execute(new_data);
     };
 

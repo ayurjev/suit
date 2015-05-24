@@ -198,7 +198,7 @@ var Suit = function() {
             if (num == 1) { word = words[0]; }
             else if (num == 2 || num == 3 || num == 4) { word = words[1]; }
             else { word = words[2]; }
-            return str(initial_num) + " " + word
+            return initial_num + " " + word
         }
     };
 

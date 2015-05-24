@@ -507,7 +507,7 @@ class Template(object):
     def include(self):
         """ Includes all sub templates if template contains <breakpoint> tags with 'include' attribute """
         self.content = re.sub(
-            '(<breakpoint(?P<brcount>(?:_\d+)?) include=(.+?)(?:\s.+?)*></breakpoint(?P=brcount)>)',
+            '(<breakpoint(?P<brcount>(?:_\d+)?) include=(.+?)></breakpoint(?P=brcount)>)',
             lambda m: Template(m.group(3).strip("'").strip("\"").replace(".", "/") + ".html").getContent(),
             self.content
         )

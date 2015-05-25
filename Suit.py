@@ -959,11 +959,42 @@ class Suit(object):
         if data is None:
             data = {}
         if hasattr(self.template, "execute"):
-            return self.template.execute(data)
+            tpl_html = self.template.execute(data)
+
+            from lxml import html, etree
+            import json
+            import base64
+            tree = etree.HTML(tpl_html)
+            if tree.xpath('//div[contains(@class, "ui-container")]'):
+                for container_div in tree.xpath('//div[contains(@class, "ui-container")]'):
+                    data_div = etree.Element("div")
+                    data_div.set("class", "ui-container-data")
+                    data_div.set("style", "display: none")
+                    data_div.text = base64.b64encode(json.dumps(data, default=json_dumps_handler).encode())
+                    container_div.append(data_div)
+                tpl_html = etree.tostring(tree, encoding='unicode', method="html", doctype="<!DOCTYPE html>")
+
+            return tpl_html
         else:
             # noinspection PyAttributeOutsideInit
             self.data = data
-            return eval(self.template)(self)
+
+            tpl_html = eval(self.template)(self)
+
+            from lxml import html, etree
+            import json
+            import base64
+            tree = etree.HTML(tpl_html)
+            if tree.xpath('//div[contains(@class, "ui-container")]'):
+                for container_div in tree.xpath('//div[contains(@class, "ui-container")]'):
+                    data_div = etree.Element("div")
+                    data_div.set("class", "ui-container-data")
+                    data_div.set("style", "display: none")
+                    data_div.text = base64.b64encode(json.dumps(data, default=json_dumps_handler).encode())
+                    container_div.append(data_div)
+                tpl_html = etree.tostring(tree, encoding='unicode', method="html", doctype="<!DOCTYPE html>")
+
+            return tpl_html
 
 
 def suit(templateName):

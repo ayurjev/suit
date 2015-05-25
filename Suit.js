@@ -384,6 +384,15 @@ var SuitApi = function() {
             internal.api.id = "api." + id;
             internal.api._createListeners = function() { if (internal.api.createListeners) internal.api.createListeners(); };
             internal.api._register_self = function(self) { internal.self = self; $.data(internal.self[0], "api", internal.api); };
+            internal.api._set_data = function(self) {
+                internal.data = {};
+                var dc = self.find(".ui-container-data:first");
+                if (dc) {
+                    internal.data = atob(dc.text());
+                    dc.remove();
+                }
+                console.log(self.attr("data-template-name"), internal.data);
+            };
             internal.refresh = function(data, target_data_container_name) {
                 var html = suit.template(internal.self.attr("data-template-name")).execute(data);
                 var inner_containers = $(".data-container", internal.self);
@@ -467,6 +476,7 @@ suit.updateListeners = function() {
             if (templateName) {
                 var api = $(this).data("api") || suit.SuitApi.templates[templateName].initApi();
                 if (api) api._register_self($(this));
+                if (api) api._set_data($(this));
                 if (api) api._createListeners();
                 $(this).attr("ui-container-loaded", true)
             }

@@ -236,7 +236,7 @@ var SuitRunTime = function() {
             var res = lambdavar();
             /* Проверка на null, undefined, NaN */
             if (res === null || res === undefined || res !== res) { return default_or_null; }
-            return res;
+            return encodeURI(res);
         } catch(e) { return encodeURI(default_or_null); }
     };
 
@@ -327,7 +327,7 @@ var SuitFilters = function() {
 
     this.html = function(variable) {
         return decodeURI(variable);
-    }
+    };
 
     this.int2str = function(obj) {
         if (obj == null) return "";

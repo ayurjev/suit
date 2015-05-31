@@ -37,6 +37,7 @@ import re
 import os
 import json
 import importlib
+from html import escape, unescape
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, date, time
 
@@ -1008,7 +1009,7 @@ class SuitRunTime(object):
             res = lambdavar(context)
             if res is None:
                 return safedefault()
-            return res
+            return escape(res, quote=True) if isinstance(res, str) else res
         except NameError:
             return safedefault()
         except KeyError:
@@ -1109,6 +1110,10 @@ class SuitFilters(object):
     @staticmethod
     def _usebr(var):
         return re.sub("\n", "<br />", var, re.MULTILINE)
+
+    @staticmethod
+    def _html(var):
+        return unescape(var)
 
     @staticmethod
     def _plural_form(initial_num, words):

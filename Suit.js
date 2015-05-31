@@ -237,7 +237,7 @@ var SuitRunTime = function() {
             /* Проверка на null, undefined, NaN */
             if (res === null || res === undefined || res !== res) { return default_or_null; }
             return res;
-        } catch(e) { return default_or_null; }
+        } catch(e) { return encodeURI(default_or_null); }
     };
 
     this.include = function(iter_dict, template_name, data_func, template_part_to_become_scope_data) {
@@ -324,6 +324,10 @@ var SuitFilters = function() {
     this.to_str = function(variable) {
         return '"' + variable + '"'
     };
+
+    this.html = function(variable) {
+        return decodeURI(variable);
+    }
 
     this.int2str = function(obj) {
         if (obj == null) return "";

@@ -222,6 +222,20 @@ var Suit = function() {
  * @constructor
  */
 var SuitRunTime = function() {
+    this.entityMap = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': '&quot;',
+        "'": '&#39;',
+        "/": '&#x2F;'
+    };
+    this.escapeHtml = function(string) {
+        var entityMap = this.entityMap;
+        return String(string).replace(/[&<>"'\/]/g, function (s) {
+            return entityMap[s];
+        });
+    };
 
     this.stringify = function(variable) {
         var type = typeof(variable);
@@ -236,8 +250,8 @@ var SuitRunTime = function() {
             var res = lambdavar();
             /* Проверка на null, undefined, NaN */
             if (res === null || res === undefined || res !== res) { return default_or_null; }
-            return encodeURI(res);
-        } catch(e) { return encodeURI(default_or_null); }
+            return typeof(res) == "string" ? this.escapeHtml(res) : res;
+        } catch(e) { return default_or_null; }
     };
 
     this.include = function(iter_dict, template_name, data_func, template_part_to_become_scope_data) {
@@ -259,7 +273,6 @@ var SuitRunTime = function() {
             return eval('"'+condition+ '"') ? trueblock() : falseblock();
         return eval(condition) ? trueblock() : falseblock();
     };
-
 
     this.list = function(itemGeneratorFunction, iterable) {
         var result = "";

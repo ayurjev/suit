@@ -1078,6 +1078,15 @@ class SuitFilters(object):
 
     @staticmethod
     def _in(var, data):
+        if not data:
+            return False
+        if data and isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except:
+                data = data or []
+        if not isinstance(data, (dict, list, tuple)):
+            return False
         return (var in data) if (isinstance(var, SuitNone) is False and isinstance(data, SuitNone) is False) else False
 
     @staticmethod

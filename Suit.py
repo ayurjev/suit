@@ -1053,12 +1053,13 @@ class SuitRunTime(object):
     @staticmethod
     def include(iter_dict, template_name, main_data, datatemplate_part_to_become_data):
         from copy import deepcopy
+        from collections import OrderedDict
         main_data = main_data()
         new_data = deepcopy(main_data)
         for key in iter_dict:
             new_data["itervar_%s" % key] = iter_dict[key]
             datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % key, '[itervar_%s]' % key)
-        scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data))
+        scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data), object_pairs_hook=OrderedDict)
         new_data.update(scope_data)
         return Suit("views.%s" % template_name).execute(new_data)
 

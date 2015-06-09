@@ -159,6 +159,17 @@ class SuitTest(unittest.TestCase):
         m = m.replace("null", "SuitNone()")
         return m
 
+    def test_bs4(self):
+        import bs4
+        import json
+
+        template = "<var>p</var><b></b>"
+        bs = bs4.BeautifulSoup(template, features="html.parser")
+        print(bs)
+        for var in bs:
+            print(var.text)
+
+
     ############################### Общие методы ##################################
     def test_parseFirstLine(self):
         """
@@ -1010,6 +1021,13 @@ class SuitTest(unittest.TestCase):
         # Проверим первый шаблон
         executed1 = Suit("views.subfolder.template10").execute(dataForTemplate2)
         self.assertEqual(expected1, executed1)
+
+    def test_var_var(self):
+        """
+        Var var
+        """
+        template = '''<var><var>x</var></var>'''
+        self.simulate(template, "42", {"x": "y", "y": 42})
 
     def test_breakpoint_include_in_list(self):
         """

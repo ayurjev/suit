@@ -192,6 +192,7 @@ var Suit = function() {
      */
     this.utils = {
         "pluralForm": function(initial_num, words) {
+            words = JSON.parse(words);
             var num = parseInt(initial_num) % 100;
             var word;
             if (num > 19) { num = num % 10; }

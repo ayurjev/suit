@@ -125,8 +125,13 @@ var Suit = function() {
     this.pjax = function(container, url, data, cb, timeout) {
 
         if (!$(container).data("success.pjax.binded")) {
-            $(container).bind("success.pjax", function(event, data) {suit.events_controller.broadcast("XHR_Request_Completed", data); return cb(data)});
-            $(container).bind("error.pjax", function(jqXHR, textStatus, errorThrown) {suit.events_controller.broadcast("UnknownError", jqXHR, textStatus, errorThrown);});
+            $(container).bind("success.pjax", function (event, data) {
+                suit.events_controller.broadcast("XHR_Request_Completed", data);
+                return cb(data)
+            });
+            $(container).bind("error.pjax", function (jqXHR, textStatus, errorThrown) {
+                suit.events_controller.broadcast("UnknownError", jqXHR, textStatus, errorThrown);
+            });
             $(container).data("success.pjax.binded", true);
         }
         $.pjax({
@@ -416,9 +421,7 @@ var SuitApi = function() {
                 var childs_ui_containers_api = {};
                 inner_containers.each(function(num, inner_container) {
                     $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
-                        var old_api = $(child_ui_container).data("api");
-                        childs_ui_containers_api[$(child_ui_container).attr("data-template-name")] = {};
-                        childs_ui_containers_api[$(child_ui_container).attr("data-template-name")] = old_api;
+                        childs_ui_containers_api[num.toString() + "_" + uc_num.toString()] = $(child_ui_container).data("api");
                     });
                 });
 
@@ -435,10 +438,9 @@ var SuitApi = function() {
                     /* Возвращаем экземпляры api обратно в их ui-container'ы */
                     $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
                         if (childs_ui_containers_api[$(child_ui_container).attr("data-template-name")]) {
-                            $(child_ui_container).data("api", childs_ui_containers_api[$(child_ui_container).attr("data-template-name")]);
+                            $(child_ui_container).data("api", childs_ui_containers_api[num.toString() + "_" + uc_num.toString()]);
                         }
                     });
-
                 });
                 suit.updateListeners();
                 internal.api._createListeners();

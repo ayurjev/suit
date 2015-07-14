@@ -82,6 +82,23 @@ var Suit = function() {
         return responseData;
     };
 
+
+
+    this.websocket = function (url) {
+        var ec = new this.EventsController();
+        ec.ws = new WebSocket(url);
+        ec.ws.onmessage = function (event) { ec.broadcast("onmessage", JSON.parse(event.data)) };
+        ec.ws.onopen = function (event) { ec.broadcast("onopen", event) };
+        ec.ws.onclose = function (event) { ec.broadcast("onclose", event) };
+        ec.send = function(msg) {
+            if (msg instanceof Object) {
+                msg = JSON.stringify(msg);
+            };
+            ec.ws.send(msg);
+        };
+        return ec;
+    };
+
     /**
      * Upload with usage of FormData
      * @param url

@@ -429,7 +429,7 @@ var SuitApi = function() {
                 var inner_containers = $(".data-container", internal.self);
                 var new_ui_container = $('[data-template-name="'+internal.self.attr("data-template-name")+'"]', $("<div>" + html + "</div>"));
                 var new_inner_containers = $(".data-container", new_ui_container);
-                if (inner_containers.length != new_inner_containers.length) {
+                if (inner_containers.length != new_inner_containers.length && !target_data_container_name) {
                     throw new Error("Ошибка композиции шаблонов: при выполнении метода refresh() кол-во data-container'ов не совпадает");
                 }
 
@@ -445,9 +445,18 @@ var SuitApi = function() {
                 /* И в отдельном цикле мы меняем содержимое html-блоков, а потом ставим  им сохраненные ранее api */
                 $(".data-container", internal.self).each(function(num, inner_container) {
                     if (target_data_container_name) {
+                        if ($(inner_container).attr("data-part-name") == target_data_container_name) {
+                            for (var i=0; i<new_inner_containers.length;i++) {
+                                if ($(new_inner_containers[i]).attr("data-part-name") == target_data_container_name) {
+                                    $(inner_container).html($(new_inner_containers[i]).html());
+                                }
+                            }
+                        }
+                        /*
                         if ($(inner_container).attr("data-part-name") == $(new_inner_containers[num]).attr("data-part-name") && $(inner_container).attr("data-part-name") == target_data_container_name) {
                             $(inner_container).html($(new_inner_containers[num]).html() || "");
                         }
+                        */
                     } else {
                         $(inner_container).html($(new_inner_containers[num]).html() || "");
                     }

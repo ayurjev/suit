@@ -441,7 +441,9 @@ class Template(object):
         initial_dir = os.path.realpath(os.path.curdir)
         if not os.path.isfile(templateName):
             first, *tale = templateName.split("/")
-            while os.path.basename(os.path.realpath(os.path.curdir)) != first:
+            attempts = 10
+            while os.path.basename(os.path.realpath(os.path.curdir)) and os.path.basename(os.path.realpath(os.path.curdir)) != first and attempts > 0:
+                attempts -= 1
                 os.chdir("../")
             os.chdir("../")
             if not os.path.isfile(templateName):

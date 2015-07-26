@@ -962,7 +962,11 @@ class Suit(object):
         if data is None:
             data = {}
         if hasattr(self.template, "execute"):
-            return self.template.execute(data)
+            res = self.template.execute(data)
+            # поддержка internal.data, suit.environment и auto-refresh на стороне клиента:
+            if res.startswith("<!DOCTYPE html>") and res.find("auto-refresh") > -1:
+                res = res.replace("</head>", '''<script id="suit_environment_script">window.suit_environment='%s'</script></head>''' % json_safedumps(data))
+            return res
         else:
             # noinspection PyAttributeOutsideInit
             self.data = data
@@ -1211,6 +1215,30 @@ def json_loads_handler(data):
             except Exception as err:
                 raise err
     return data
+
+
+def json_safedumps(content):
+    """
+    This function "safely" dumps a JSON string that could be injected into a front-end template inside a JavaScript quoted literal, i.e.
+    <script>
+    var data = JSON.parse("{{ encoded_data }}");
+    </script>
+    So, quotes in the JSON needed to be escaped to not conflict with the string delimiters, newlines had to be removed or they'd cause a JavaScript syntax error, and so-on.
+    - - -
+    Originally, the two __literal_slash__ lines didn't exist, and it would fall apart if some of the text had a literal "\n" sequence written out in text, i.e. "\\n", as in this example:
+    >>> data = {"message": "Hello\\nworld!"}
+    >>> json.dumps(data)
+    {"message": "Hello\\nworld!"}
+    What would happen was that the "\\n" substitution would end up matching the "\n" from "\\n" and removing it, leaving an orphaned, single "\" character behind. If that character then ended up touching another letter and it didn't form a valid JSON escape sequence (for example, "\a"), this would cause a JSON parse error in the JavaScript.
+    So, they first rename literal \ characters to __literal_slash__, do all the other substitutions, and then rename it back.
+    """
+    return json.dumps(content, default=json_dumps_handler) \
+        .replace('\\\\', '__literal_slash__') \
+        .replace('\\n', '') \
+        .replace('\\r', '') \
+        .replace('\\"', '\\\\"') \
+        .replace("'", "\\'") \
+        .replace('__literal_slash__', '\\\\\\\\')
 
 
 def trimSpaces(string):

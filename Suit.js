@@ -315,6 +315,18 @@ var SuitRunTime = function() {
  */
 var SuitFilters = function() {
 
+    this.intersection = function(A,B)
+    {
+        var M=A.length, N=B.length, C=[];
+        for (var i=0; i<M; i++)
+        { var j=0, k=0;
+            while (B[j]!==A[i] && j<N) j++;
+            while (C[k]!==A[i] && k<C.length) k++;
+            if (j!=N && k==C.length) C[C.length]=A[i];
+        }
+        return C;
+    };
+
     this.get_length = function(variable) {
         if (typeof(variable) == "object") {
             var counter = 0;
@@ -417,6 +429,7 @@ var SuitApi = function() {
             internal.events_controller = new suit.EventsController();
             internal.error_controller.id = "error_controller." + id;
             internal.events_controller.id = "events_controller." + id;
+            internal.data = suit.environment;
             internal.api = {};
 
             if (cb) cb(internal);
@@ -534,6 +547,39 @@ String.prototype.format = function() {
 /* UI-containers initialization */
 if (typeof $ !== "undefined") {
     $(document).ready(function() {
+
+        if (window.suit_environment) {
+            try {
+                suit.environment = JSON.parse(window.suit_environment);
+                $("#suit_environment_script").remove();
+            } catch (e) { console.log("suit environment loading failed: " + e.toString()); return; }
+            if (suit.environment) {
+                suit.events_controller.on("XHR_Request_Completed", suit, function(data) {
+                    var changes = [];
+                    if (data.result) {
+                        for(var key in data.result) {
+                            if (key in suit.environment && suit.environment[key] != data.result[key]) {
+                                suit.environment[key] = data.result[key];
+                                changes.push(key);
+                            }
+                        }
+                        if (changes.length) {
+                            $('[auto-refresh]').each(function(num, arblock) {
+                                var variables = $(arblock).attr("auto-refresh").split(",");
+                                if (suit.SuitFilters.intersection(variables, changes).length) {
+                                    if ($(arblock).hasClass("ui-container")) {
+                                        $(arblock).data("api").refresh(suit.environment);
+                                    } else if ($(arblock).hasClass("data-container") && $(arblock).attr("data-part-name").length) {
+                                        $(arblock).parent(".ui-container").data("api").refresh(suit.environment, $(arblock).attr("data-part-name"));
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
         suit.updateListeners();
     });
 }

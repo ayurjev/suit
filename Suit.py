@@ -965,7 +965,12 @@ class Suit(object):
             res = self.template.execute(data)
             # поддержка internal.data, suit.environment и auto-refresh на стороне клиента:
             if res.startswith("<!DOCTYPE html>") and res.find("auto-refresh") > -1:
-                res = res.replace("</head>", '''<script id="suit_environment_script">window.suit_environment='%s'</script></head>''' % json_safedumps(data))
+                exclude = data.get("suit_environment_exclude")
+                if exclude:
+                    suit_env_data = {key: val for key,val in data.items() if key not in exclude}
+                else:
+                    suit_env_data = data
+                res = res.replace("</head>", '''<script id="suit_environment_script">window.suit_environment='%s'</script></head>''' % json_safedumps(suit_env_data))
             return res
         else:
             # noinspection PyAttributeOutsideInit

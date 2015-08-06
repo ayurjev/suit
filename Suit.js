@@ -82,19 +82,24 @@ var Suit = function() {
         return responseData;
     };
 
-
-
-    this.websocket = function (url) {
+    this.websocket = function (url, error_suppression) {
         var ec = new this.EventsController();
         ec.ws = new WebSocket(url);
-        ec.ws.onmessage = function (event) { ec.broadcast("onmessage", JSON.parse(event.data)) };
+        ec.ws.onmessage = function (event) {
+            var data = JSON.parse(event.data);
+            if (!error_suppression || error_suppression(data) !== true)
+                suit.events_controller.broadcast("XHR_Request_Completed", data, error_suppression);
+            ec.broadcast("onmessage", data);
+            if (data.ws && data.ws.event) {
+                ec.broadcast(data.ws.event, data);
+            }
+        };
         ec.ws.onopen = function (event) { ec.broadcast("onopen", event) };
         ec.ws.onclose = function (event) { ec.broadcast("onclose", event) };
-        ec.send = function(msg) {
-            if (msg instanceof Object) {
-                msg = JSON.stringify(msg);
-            };
-            ec.ws.send(msg);
+        ec.send = function(action, data) {
+            data = data || {};
+            data.action = action;
+            ec.ws.send(JSON.stringify(data));
         };
         return ec;
     };

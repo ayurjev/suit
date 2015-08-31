@@ -802,6 +802,8 @@ class JavascriptSyntax(Syntax):
             return '''suit.SuitFilters.usebr(%s)''' % var
         elif filterName == "plural_form":
             return '''suit.SuitFilters.plural_form(%s, %s)''' % (var, data)
+        elif filterName == "html":
+            return '''suit.SuitFilters.html(%s)''' % var
         var = "suit.SuitRunTime.stringify(%s)" % var
         return var
 
@@ -1070,8 +1072,11 @@ class SuitRunTime(object):
         for key in iter_dict:
             new_data["itervar_%s" % key] = iter_dict[key]
             datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % key, '[itervar_%s]' % key)
-        scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data), object_pairs_hook=OrderedDict)
-        new_data.update(scope_data)
+        try:
+            scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data), object_pairs_hook=OrderedDict)
+            new_data.update(scope_data)
+        except ValueError:
+            print("!!! ERROR !!! INVALID JSON: %s" % Suit(datatemplate_part_to_become_data).execute(new_data))
         return Suit("views.%s" % template_name).execute(new_data)
 
 

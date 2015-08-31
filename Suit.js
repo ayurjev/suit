@@ -43,16 +43,23 @@ var Suit = function() {
     };
 
     this.connect = function(p1, p2, p3, p4) {
-        var initiator_selector = p1;
-        var event_name = p2;
-        if (p4 == undefined) {
-            this.on($("body"), event_name, initiator_selector, p3);
-        }
-        else {
-            if (initiator_selector.on) {
-                this.on(initiator_selector, event_name, p3, p4);
-            } else {
-                throw new Error("there is no method 'on' in object '" + initiator_selector + "'");
+
+        if (p1 instanceof Array) {
+            $.each(p1, function(num, subp1) {
+                suit.connect(subp1, p2, p3, p4);
+            });
+        } else {
+            var initiator_selector = p1;
+            var event_name = p2;
+            if (p4 == undefined) {
+                this.on($("body"), event_name, initiator_selector, p3);
+            }
+            else {
+                if (initiator_selector.on) {
+                    this.on(initiator_selector, event_name, p3, p4);
+                } else {
+                    throw new Error("there is no method 'on' in object '" + initiator_selector + "'");
+                }
             }
         }
     };
@@ -379,6 +386,12 @@ var SuitFilters = function() {
     };
 
     this.html = function(variable) {
+        variable = String(variable).replace(/&amp;/g, "&");
+        variable = String(variable).replace(/&lt;/g, "<");
+        variable = String(variable).replace(/&gt;/g, ">");
+        variable = String(variable).replace(/&quot;/g, '"');
+        variable = String(variable).replace(/&#39;/g, "'");
+        variable = String(variable).replace(/&#x2F;/g, "/");
         return decodeURI(variable);
     };
 
@@ -391,18 +404,21 @@ var SuitFilters = function() {
     };
 
     this.dateformat = function(date, format_str) {
-        date = new Date(date);
+        var date_obj = new Date(date);
+        if (Object.prototype.toString.call(date_obj) != "[object Date]" || isNaN(date_obj.getTime())) {
+            return date;
+        }
         var pad = function (val) {
             val = String(val);
             return val.length == 1 ? "0" + val : val;
         };
-        format_str = format_str.replace("%d", pad(date.getDate()));
-        format_str = format_str.replace("%m", pad(date.getMonth() + 1));
-        format_str = format_str.replace("%y", String(date.getFullYear())[2] + String(date.getFullYear())[3]);
-        format_str = format_str.replace("%Y", date.getFullYear());
-        format_str = format_str.replace("%H", pad(date.getHours()));
-        format_str = format_str.replace("%M", pad(date.getMinutes()));
-        format_str = format_str.replace("%S", pad(date.getSeconds()));
+        format_str = format_str.replace("%d", pad(date_obj.getDate()));
+        format_str = format_str.replace("%m", pad(date_obj.getMonth() + 1));
+        format_str = format_str.replace("%y", String(date_obj.getFullYear())[2] + String(date_obj.getFullYear())[3]);
+        format_str = format_str.replace("%Y", date_obj.getFullYear());
+        format_str = format_str.replace("%H", pad(date_obj.getHours()));
+        format_str = format_str.replace("%M", pad(date_obj.getMinutes()));
+        format_str = format_str.replace("%S", pad(date_obj.getSeconds()));
         return format_str;
     };
 
@@ -489,11 +505,34 @@ var SuitApi = function() {
                 suit.updateListeners();
                 internal.api._createListeners();
             };
-            internal.connect = function(selector, event, cb) {suit.connect(internal.self, event, selector, cb)};
+            internal.connect = function(selector, event, cb) {
+                if (selector instanceof Array) {
+                    selector.each(function(num, subselector) {
+                        suit.connect(internal.self, event, subselector, cb);
+                    })
+                } else {
+                    suit.connect(internal.self, event, selector, cb);
+                }
+            };
             internal.widget = function(data_template_name, host_container) {
-                var hc = host_container ? $(host_container, internal.self) : internal.self;
+                var hc = host_container ? host_container : internal.self;
+                if (!host_container instanceof Object) {
+                    hc =  host_container ? $(host_container, internal.self) : internal.self;
+                }
                 var widget = hc.find("[data-template-name='"+data_template_name+"']:first");
                 return widget.data("api");
+            };
+            internal.widgets = function(data_template_name, host_container) {
+                var hc = host_container ? host_container : internal.self;
+                if (!host_container instanceof Object) {
+                    hc =  host_container ? $(host_container, internal.self) : internal.self;
+                }
+                var widgets = hc.find("[data-template-name='"+data_template_name+"']");
+                var widgets_api = [];
+                $.each(widgets, function(num, widget) {
+                    widgets_api.push($(widget).data("api"));
+                });
+                return widgets_api;
             };
             if (!internal.api.refresh) internal.api.refresh = internal.refresh;
             return internal.api;

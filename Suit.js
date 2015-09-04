@@ -516,7 +516,7 @@ var SuitApi = function() {
             };
             internal.widget = function(data_template_name, host_container) {
                 var hc = host_container ? host_container : internal.self;
-                if (!host_container instanceof Object) {
+                if (!(host_container instanceof $)) {
                     hc =  host_container ? $(host_container, internal.self) : internal.self;
                 }
                 var widget = hc.find("[data-template-name='"+data_template_name+"']:first");
@@ -524,7 +524,7 @@ var SuitApi = function() {
             };
             internal.widgets = function(data_template_name, host_container) {
                 var hc = host_container ? host_container : internal.self;
-                if (!host_container instanceof Object) {
+                if (!(host_container instanceof $)) {
                     hc =  host_container ? $(host_container, internal.self) : internal.self;
                 }
                 var widgets = hc.find("[data-template-name='"+data_template_name+"']");

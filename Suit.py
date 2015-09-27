@@ -1129,6 +1129,11 @@ class SuitFilters(object):
     def _dateformat(var, format_str):
         if isinstance(var, (datetime, date)):
             return var.strftime(format_str)
+        elif isinstance(var, str):
+            try:
+                return datetime.strptime(var, '%a %b %d %H:%M:%S %Y').strftime(format_str)
+            except ValueError:
+                return var
         return var
 
     @staticmethod

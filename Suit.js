@@ -568,7 +568,11 @@ suit.updateListeners = function() {
         if (!$(this).attr("ui-container-loaded")) {
             var templateName = $(this).attr("data-template-name");
             if (templateName) {
-                var api = $(this).data("api") || suit.SuitApi.templates[templateName].initApi();
+                try {
+                    var api = $(this).data("api") || suit.SuitApi.templates[templateName].initApi();
+                } catch (e) {
+                    console.log("there is no template with name '" + templateName + "'");
+                }
                 if (api) api._register_self($(this));
                 if (api) api._createListeners();
                 $(this).attr("ui-container-loaded", true)

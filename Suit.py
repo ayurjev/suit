@@ -499,6 +499,7 @@ class Template(object):
         if parentTemplateName is None:
             return
         parent = Template(parentTemplateName.group(1).strip("'").strip("\"").replace(".", "/") + ".html")
+        parent.content = re.sub("\s\s+", " ", parent.content).strip()
         rebased_template = re.sub("\s\s+", " ", parent.content).strip()
         bp_parent = parent.getBreakPoints(parent.content, all_levels=True)
         bp_current = self.getBreakPoints(self.content)

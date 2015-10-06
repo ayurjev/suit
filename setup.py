@@ -20,6 +20,7 @@ setup(
     name='suit',
     version=version,
     packages=['suit'],
+    package_data={'suit': ['js/Suit.js']},
     url='',
     license='',
     author='ayurjev',

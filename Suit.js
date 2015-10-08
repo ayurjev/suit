@@ -234,7 +234,14 @@ var Suit = function() {
             else if (num == 2 || num == 3 || num == 4) { word = words[1]; }
             else { word = words[2]; }
             return initial_num + " " + word
-        }
+        },
+        fnDelay: (function(){
+            var timer = 0;
+            return function(callback, ms){
+                clearTimeout(timer);
+                timer = setTimeout(callback, ms);
+            };
+        })()
     };
 
     /**

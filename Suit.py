@@ -54,6 +54,7 @@ class TemplateParseError(Exception):
 class TemplateNotFound(Exception):
     pass
 
+
 class TagCounter(object):
     """ Counts/decounts a nested tags """
 
@@ -1096,6 +1097,7 @@ class SuitFilters(object):
 
     @staticmethod
     def _in(var, data):
+        print(var, data)
         if not data:
             return False
         if data and isinstance(data, str):
@@ -1105,6 +1107,7 @@ class SuitFilters(object):
                 data = data or []
         if not isinstance(data, (dict, list, tuple)):
             return False
+        print(var, data, var in data, type(var), type(data))
         return (var in data) if (isinstance(var, SuitNone) is False and isinstance(data, SuitNone) is False) else False
 
     @staticmethod
@@ -1113,7 +1116,11 @@ class SuitFilters(object):
 
     @staticmethod
     def _contains(haystack, needle):
-        return SuitFilters._in(needle, haystack)
+        print(haystack, needle)
+        print(SuitFilters._in(needle, haystack))
+        direct = SuitFilters._in(needle, haystack)
+        if not direct and type(needle) is str and needle.isnumeric():
+            return SuitFilters._in(int(needle), haystack)
 
     @staticmethod
     def _bool(var):

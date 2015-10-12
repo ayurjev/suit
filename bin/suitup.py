@@ -24,7 +24,6 @@ def main():
 if __name__ == '__main__':
     path = argv[1] if len(argv) > 1 else None
 
-
     if path:
         os.chdir(path)
     main()

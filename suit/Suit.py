@@ -108,6 +108,7 @@ class XmlTag(object):
     Base class of the tags hierarchy.
     It represents a ordinary xml tag without any template engine logic.
     """
+
     def __init__(self, stringTag):
         self.stringTag = re.sub("\s\s+", " ", stringTag).strip()
         self.firstLine = self.parseFirstLine(self.stringTag)
@@ -212,10 +213,9 @@ class Variable(XmlTag):
         return result
 
 
-
-
 class IterationVariable(Variable):
     """ Represents an iteration variable """
+
     def _convertVarPath(self, varDottedNotation):
         # we dont interested in parameter varDottedNotation
         # since we have all required data in attributes of current tag
@@ -234,6 +234,7 @@ class IterationVariable(Variable):
 
 class IterationKey(Variable):
     """ Represents an iteration key """
+
     def __init__(self, tag_string):
         super().__init__(tag_string)
         self.var_name = self.attributes.get("name") + (
@@ -243,6 +244,7 @@ class IterationKey(Variable):
 
 class Condition(XmlTag):
     """ Represents a condition expression """
+
     def __init__(self, tagString):
         super().__init__(tagString)
         self.condition = TemplatePart(
@@ -262,6 +264,7 @@ class Condition(XmlTag):
 
 class Expression(XmlTag):
     """ Represents a simple expression that can be avaluated """
+
     def __init__(self, tag_string):
         super().__init__(tag_string)
         self.expresion_body = TemplatePart(self.body)
@@ -367,6 +370,7 @@ class TemplatePart(object):
     "hello<span>, </span>world!" is not valid xml-tag,
     but it's a normal TemplatePart string
     """
+
     def __init__(self, text, tags_to_process=None):
         text = trimSpaces(text)
         self.text = text
@@ -433,7 +437,6 @@ class TemplatePart(object):
 
 
 class Template(object):
-
     def __init__(self, templateName):
         self.tags_counter = TagCounter()
         self.templateName = templateName
@@ -443,7 +446,8 @@ class Template(object):
         if not os.path.isfile(templateName):
             first, *tale = templateName.split("/")
             attempts = 10
-            while os.path.basename(os.path.realpath(os.path.curdir)) and os.path.basename(os.path.realpath(os.path.curdir)) != first and attempts > 0:
+            while os.path.basename(os.path.realpath(os.path.curdir)) and os.path.basename(
+                    os.path.realpath(os.path.curdir)) != first and attempts > 0:
                 attempts -= 1
                 os.chdir("../")
             os.chdir("../")
@@ -455,10 +459,10 @@ class Template(object):
         f.close()
         os.chdir(initial_dir)
 
-        self.content = re.sub("<!--(.+?)-->", "", self.content)         # cut all comments
+        self.content = re.sub("<!--(.+?)-->", "", self.content)  # cut all comments
         self.css, self.js = None, None
-        self.parse_resources("css", "<style(?:\s.+?)*>(.*?)</style>")   # cut & save css
-        self.parse_resources("js", "<script>(.*?)</script>")            # cut & save js
+        self.parse_resources("css", "<style(?:\s.+?)*>(.*?)</style>")  # cut & save css
+        self.parse_resources("js", "<script>(.*?)</script>")  # cut & save js
         self.rebase()
         self.include()
 
@@ -549,12 +553,12 @@ class Template(object):
         # Build js
         jsCompiled = compiled["js"]
         jsApiInit = self.js.strip() if self.js else "null"
-        jsSource = 'suit.SuitApi.addTemplate({template}, {jsCompiled}, {jsApiInit});\n'\
+        jsSource = 'suit.SuitApi.addTemplate({template}, {jsCompiled}, {jsApiInit});\n' \
             .format(
-                template='"%s"' % self.templateName.replace(".html", "").replace("/", "."),
-                jsCompiled='function(data) {data = data || {}; return %s}' % jsCompiled,
-                jsApiInit=jsApiInit
-            )
+            template='"%s"' % self.templateName.replace(".html", "").replace("/", "."),
+            jsCompiled='function(data) {data = data || {}; return %s}' % jsCompiled,
+            jsApiInit=jsApiInit
+        )
 
         f = open("__js__/%s" % self.templateName.replace("/", "_").replace("html", "js"), "w+")
         f.writelines(jsSource)
@@ -563,6 +567,7 @@ class Template(object):
 
 class Syntax(metaclass=ABCMeta):
     """ Abstract Class For Creating Language Engines """
+
     def try_compile(self, text):
         """ Tries to compile given string """
         if text is not None:
@@ -704,7 +709,8 @@ class PythonSyntax(Syntax):
         new_inc_data = inc_data
         if inc_data:
             iter_addition = '''"%s": %s''' % (itervar, itervar)
-            new_inc_data = '{%s}' % iter_addition if len(inc_data) == 2 else inc_data.rstrip("}") + ", " + iter_addition  + "}"
+            new_inc_data = '{%s}' % iter_addition if len(inc_data) == 2 else inc_data.rstrip(
+                "}") + ", " + iter_addition + "}"
         template = template.replace("SuitRunTime.include(%s, " % inc_data, "SuitRunTime.include(%s, " % new_inc_data)
         return '''SuitRunTime.list(lambda %s: %s, %s)''' % (itervar, template, iterable)
 
@@ -735,6 +741,7 @@ class JavascriptSyntax(Syntax):
     Класс, обеспечивающий возможность компиляции шаблонов в исходный код javascript
 
     """
+
     def compile(self, data):
         template, tags = data
         template = template.replace('"', '\\"')
@@ -772,8 +779,10 @@ class JavascriptSyntax(Syntax):
         new_inc_data = inc_data
         if inc_data:
             iter_addition = '''"%s": %s''' % (itervar, itervar)
-            new_inc_data = '{%s}' % iter_addition if len(inc_data) == 2 else inc_data.rstrip("}") + ", " + iter_addition  + "}"
-        template = template.replace("suit.SuitRunTime.include(%s, " % inc_data, "suit.SuitRunTime.include(%s, " % new_inc_data)
+            new_inc_data = '{%s}' % iter_addition if len(inc_data) == 2 else inc_data.rstrip(
+                "}") + ", " + iter_addition + "}"
+        template = template.replace("suit.SuitRunTime.include(%s, " % inc_data,
+                                    "suit.SuitRunTime.include(%s, " % new_inc_data)
 
         return '''suit.SuitRunTime.list(function(%s) { return %s; }, (%s))''' % (
             itervar, template.replace(".%s)" % itervar, "[%s])" % itervar), iterable)
@@ -811,7 +820,6 @@ class JavascriptSyntax(Syntax):
 
 
 class Compiler(object):
-
     def compile(self, path="."):
         """
         Компилирует все найденные шаблоны внутри указанного каталога
@@ -850,7 +858,7 @@ class Compiler(object):
         for file in os.listdir("__%s__" % fileType):
             if os.path.isfile("__%s__/" % fileType + file) and \
                     file.endswith(".%s" % fileType) and \
-                    file.startswith("all.") is False:
+                            file.startswith("all.") is False:
                 f = open("__%s__/%s" % (fileType, file))
                 all_content += f.readlines()
                 f.close()
@@ -931,21 +939,22 @@ class Compiler(object):
             return False
 
 
-########################################### RunTime Classes ##########################################################
+# ########################################## RunTime Classes ##########################################################
 
 
 class Suit(object):
     """
     Suit execution wrapper
     """
+
     def __init__(self, path):
         if not path.startswith("{"):
             path = path.split(".")
             self.template = None
             for i in range(len(path)):
-                cpath = "%s/__py__/" % "/".join(path[:len(path)-i])
+                cpath = "%s/__py__/" % "/".join(path[:len(path) - i])
                 if os.path.isdir(cpath):
-                    template_name_part = "_".join(path[len(path)-i:])
+                    template_name_part = "_".join(path[len(path) - i:])
                     module = importlib.import_module("%s%s" % (cpath.replace("/", "."), template_name_part))
                     template_class = getattr(module, template_name_part)
                     self.template = template_class()
@@ -955,7 +964,8 @@ class Suit(object):
             template_part = TemplatePart(path)
             compiled = PythonSyntax().compile(template_part.getDataForCompile())
             self.template = "lambda self: %s" % compiled
-            self.template = re.sub('\[itervar_(.+?)\]', lambda m: '[self.data["itervar_%s"]]' % m.group(1), self.template)
+            self.template = re.sub('\[itervar_(.+?)\]', lambda m: '[self.data["itervar_%s"]]' % m.group(1),
+                                   self.template)
 
     def execute(self, data=None):
         """
@@ -971,10 +981,12 @@ class Suit(object):
             if res.startswith("<!DOCTYPE html>") and res.find("auto-refresh") > -1:
                 exclude = data.get("suit_environment_exclude")
                 if exclude:
-                    suit_env_data = {key: val for key,val in data.items() if key not in exclude}
+                    suit_env_data = {key: val for key, val in data.items() if key not in exclude}
                 else:
                     suit_env_data = data
-                res = res.replace("</head>", '''<script id="suit_environment_script">window.suit_environment='%s'</script></head>''' % json_safedumps(suit_env_data))
+                res = res.replace("</head>",
+                                  '''<script id="suit_environment_script">window.suit_environment='%s'</script></head>''' % json_safedumps(
+                                      suit_env_data))
             return res
         else:
             # noinspection PyAttributeOutsideInit
@@ -984,6 +996,7 @@ class Suit(object):
 
 def suit(templateName):
     """ Suit decorator """
+
     def decorator(func):
         def wrapped(*args, **kwargs):
             data = func(*args, **kwargs)
@@ -998,12 +1011,15 @@ def suit(templateName):
                     return data
                 except NameError:
                     return data
+
         return wrapped
+
     return decorator
 
 
 class SuitRunTime(object):
     """ RunTime helpers """
+
     @staticmethod
     def stringify(obj):
         """ Prints variable """
@@ -1017,9 +1033,11 @@ class SuitRunTime(object):
         :param default:    default value
         :param context:    execution context (object that contains template's data in it's attributes)
         """
+
         def safedefault():
             """ Returns default value or SuitNone() """
             return default if default is not None else SuitNone()
+
         try:
             res = lambdavar(context)
             if res is None:
@@ -1069,13 +1087,16 @@ class SuitRunTime(object):
     def include(iter_dict, template_name, main_data, datatemplate_part_to_become_data):
         from copy import deepcopy
         from collections import OrderedDict
+
         main_data = main_data()
         new_data = deepcopy(main_data)
         for key in iter_dict:
             new_data["itervar_%s" % key] = iter_dict[key]
-            datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % key, '[itervar_%s]' % key)
+            datatemplate_part_to_become_data = datatemplate_part_to_become_data.replace('[%s]' % key,
+                                                                                        '[itervar_%s]' % key)
         try:
-            scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data), object_pairs_hook=OrderedDict)
+            scope_data = json.loads(Suit(datatemplate_part_to_become_data).execute(new_data),
+                                    object_pairs_hook=OrderedDict)
             new_data.update(scope_data)
         except ValueError:
             print("!!! ERROR !!! INVALID JSON: %s" % Suit(datatemplate_part_to_become_data).execute(new_data))
@@ -1087,6 +1108,7 @@ class SuitFilters(object):
     Базовый класс, предоставляющий функционал фильтров (декораторов) для применения к переменным
 
     """
+
     @staticmethod
     def _length(var):
         return len(str(var) if isinstance(var, (int, float)) is True else var) if var not in [None, ""] else 0
@@ -1097,7 +1119,6 @@ class SuitFilters(object):
 
     @staticmethod
     def _in(var, data):
-        print(var, data)
         if not data:
             return False
         if data and isinstance(data, str):
@@ -1107,7 +1128,6 @@ class SuitFilters(object):
                 data = data or []
         if not isinstance(data, (dict, list, tuple)):
             return False
-        print(var, data, var in data, type(var), type(data))
         return (var in data) if (isinstance(var, SuitNone) is False and isinstance(data, SuitNone) is False) else False
 
     @staticmethod
@@ -1116,8 +1136,6 @@ class SuitFilters(object):
 
     @staticmethod
     def _contains(haystack, needle):
-        print(haystack, needle)
-        print(SuitFilters._in(needle, haystack))
         direct = SuitFilters._in(needle, haystack)
         if not direct and type(needle) is str and needle.isnumeric():
             return SuitFilters._in(int(needle), haystack)
@@ -1166,7 +1184,7 @@ class SuitFilters(object):
             num %= 10
         if num == 1:
             word = words[0]
-        elif num == 2 or  num == 3 or num == 4:
+        elif num == 2 or num == 3 or num == 4:
             word = words[1]
         else:
             word = words[2]
@@ -1175,6 +1193,7 @@ class SuitFilters(object):
 
 class SuitNone(object):
     """ Represents None, but with more complicated logic """
+
     def __init__(self, value=None):
         self.value = value
 
@@ -1231,8 +1250,8 @@ def json_dumps_handler(obj):
 
 def json_loads_handler(data):
     """ json loads handler """
-    import re
     from datetime import datetime
+
     for k, v in data.items():
         if isinstance(v, str) and re.search("\w\w\w[\s]+\w\w\w[\s]+\d[\d]*[\s]+\d\d:\d\d:\d\d[\s]+\d\d\d\d", v):
             try:

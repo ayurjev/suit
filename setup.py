@@ -27,5 +27,5 @@ setup(
     author='ayurjev',
     author_email='',
     description='',
-    scripts=['bin/suitup.py']
+    scripts=['bin/suitup']
 )

@@ -1111,7 +1111,11 @@ class SuitFilters(object):
 
     @staticmethod
     def _length(var):
-        return len(str(var) if isinstance(var, (int, float)) is True else var) if var not in [None, ""] else 0
+        if var is True:
+            return 1
+        if var in [None, False, "", 0, [], {}]:
+            return 0
+        return len(str(var))
 
     @staticmethod
     def _startswith(var, data=None):

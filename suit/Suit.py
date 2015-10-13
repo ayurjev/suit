@@ -1113,6 +1113,8 @@ class SuitFilters(object):
     def _length(var):
         if var is True:
             return 1
+        if isinstance(var, SuitNone):
+            return 0
         if var in [None, False, "", 0, [], {}]:
             return 0
         return len(str(var))

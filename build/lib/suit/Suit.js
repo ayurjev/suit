@@ -365,6 +365,11 @@ var SuitFilters = function() {
     };
 
     this.inArray = function(needle, haystack) {
+        if (typeof(haystack) == "string") {
+            try {
+                haystack = JSON.parse(haystack);
+            } catch (e) {}
+        }
         if (needle == null || haystack == null) { return false }
         if (typeof(haystack) == "string"){ return !!(haystack.indexOf(needle) > -1); }
         else if (haystack instanceof Array) {

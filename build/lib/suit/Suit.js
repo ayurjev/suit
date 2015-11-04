@@ -579,26 +579,28 @@ suit.events_controller = new suit.EventsController();
 suit.error_controller = new suit.ErrorController();
 suit.events_controller.id = "suit.EventsController";
 suit.error_controller.id = "suit.ErrorController";
-suit.updateListeners = function() {
-    var load = function() {
-        if ($(this).find(".ui-container").length) {
-            $(this).find(".ui-container").each(load);
-        }
-        if (!$(this).attr("ui-container-loaded")) {
-            var templateName = $(this).attr("data-template-name");
-            if (templateName) {
-                try {
-                    var api = $(this).data("api") || suit.SuitApi.templates[templateName].initApi();
-                } catch (e) {
-                    console.log("there is no template with name '" + templateName + "'");
-                }
-                if (api) api._register_self($(this));
-                if (api) api._createListeners();
-                $(this).attr("ui-container-loaded", true)
+
+suit.load = function() {
+    if ($(this).find(".ui-container").length) {
+        $(this).find(".ui-container").each(suit.load);
+    }
+    if (!$(this).attr("ui-container-loaded")) {
+        var templateName = $(this).attr("data-template-name");
+        if (templateName) {
+            try {
+                var api = $(this).data("api") || suit.SuitApi.templates[templateName].initApi();
+            } catch (e) {
+                console.log("there is no template with name '" + templateName + "'");
             }
+            if (api) api._register_self($(this));
+            if (api) api._createListeners();
+            $(this).attr("ui-container-loaded", true)
         }
-    };
-    $(".ui-container").each(load);
+    }
+};
+
+suit.updateListeners = function() {
+    $(".ui-container").each(suit.load);
 };
 
 
@@ -611,8 +613,20 @@ String.prototype.format = function() {
     );
 };
 
+$.fn.putBefore = function(dest){
+    return this.each(function(){
+        $(dest).before($(this));
+    });
+};
+$.fn.putAfter = function(dest){
+    return this.each(function(){
+        $(dest).after($(this));
+    });
+};
+
 /* UI-containers initialization */
 if (typeof $ !== "undefined") {
+
     $(document).ready(function() {
 
         if (window.suit_environment) {

@@ -486,41 +486,41 @@ var SuitApi = function() {
                     }
                 }
 
-                /* Ищем все ui-container'ы внутри каждого data_container'a обновляемого шаблона и сохраним их api */
-                /* Это обязательно надо сделать в отдельном цикле each, чтобы избежать ерунды с ненужным замыканием */
-                var childs_ui_containers_api = {};
-                inner_containers.each(function(num, inner_container) {
-                    $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
-                        childs_ui_containers_api[num.toString() + "_" + uc_num.toString()] = $(child_ui_container).data("api");
+                if (inner_containers.length == 0) {
+                    internal.self.html($(html).html());
+                    $(".ui-container", internal.self).attr("ui-container-loaded", null);
+                } else {
+                    /* Ищем все ui-container'ы внутри каждого data_container'a обновляемого шаблона и сохраним их api */
+                    /* Это обязательно надо сделать в отдельном цикле each, чтобы избежать ерунды с ненужным замыканием */
+                    var childs_ui_containers_api = {};
+                    inner_containers.each(function(num, inner_container) {
+                        $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
+                            childs_ui_containers_api[num.toString() + "_" + uc_num.toString()] = $(child_ui_container).data("api");
+                        });
                     });
-                });
 
-                /* И в отдельном цикле мы меняем содержимое html-блоков, а потом ставим  им сохраненные ранее api */
-                $(".data-container", internal.self).each(function(num, inner_container) {
-                    if (target_data_container_name) {
-                        if ($(inner_container).attr("data-part-name") == target_data_container_name) {
-                            for (var i=0; i<new_inner_containers.length;i++) {
-                                if ($(new_inner_containers[i]).attr("data-part-name") == target_data_container_name) {
-                                    $(inner_container).html($(new_inner_containers[i]).html());
+                    /* И в отдельном цикле мы меняем содержимое html-блоков, а потом ставим  им сохраненные ранее api */
+                    $(".data-container", internal.self).each(function(num, inner_container) {
+                        if (target_data_container_name) {
+                            if ($(inner_container).attr("data-part-name") == target_data_container_name) {
+                                for (var i=0; i<new_inner_containers.length;i++) {
+                                    if ($(new_inner_containers[i]).attr("data-part-name") == target_data_container_name) {
+                                        $(inner_container).html($(new_inner_containers[i]).html());
+                                    }
                                 }
                             }
-                        }
-                        /*
-                        if ($(inner_container).attr("data-part-name") == $(new_inner_containers[num]).attr("data-part-name") && $(inner_container).attr("data-part-name") == target_data_container_name) {
+                        } else {
                             $(inner_container).html($(new_inner_containers[num]).html() || "");
                         }
-                        */
-                    } else {
-                        $(inner_container).html($(new_inner_containers[num]).html() || "");
-                    }
 
-                    /* Возвращаем экземпляры api обратно в их ui-container'ы */
-                    $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
-                        if (childs_ui_containers_api[$(child_ui_container).attr("data-template-name")]) {
-                            $(child_ui_container).data("api", childs_ui_containers_api[num.toString() + "_" + uc_num.toString()]);
-                        }
+                        /* Возвращаем экземпляры api обратно в их ui-container'ы */
+                        $(".ui-container", $(inner_container)).each(function (uc_num, child_ui_container) {
+                            if (childs_ui_containers_api[$(child_ui_container).attr("data-template-name")]) {
+                                $(child_ui_container).data("api", childs_ui_containers_api[num.toString() + "_" + uc_num.toString()]);
+                            }
+                        });
                     });
-                });
+                }
                 suit.updateListeners();
                 internal.api._createListeners();
             };

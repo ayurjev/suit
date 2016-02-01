@@ -1202,7 +1202,7 @@ class SuitFilters(object):
             word = words[1]
         else:
             word = words[2]
-        return "%d %s" % (initial_num, word)
+        return word
 
 
 class SuitNone(object):

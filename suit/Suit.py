@@ -813,6 +813,8 @@ class JavascriptSyntax(Syntax):
             return '''suit.SuitFilters.usebr(%s)''' % var
         elif filterName == "plural_form":
             return '''suit.SuitFilters.plural_form(%s, %s)''' % (var, data)
+        elif filterName == "plural_word":
+            return '''suit.SuitFilters.plural_word(%s, %s)''' % (var, data)
         elif filterName == "html":
             return '''suit.SuitFilters.html(%s)''' % var
         var = "suit.SuitRunTime.stringify(%s)" % var
@@ -835,6 +837,7 @@ class Compiler(object):
                 if self._isTemplateName(target) is False:
                     continue
                 template = Template(target)
+                print(target)
                 template.compile({"py": PythonSyntax, "js": JavascriptSyntax})
 
     def build(self):
@@ -1182,6 +1185,10 @@ class SuitFilters(object):
 
     @staticmethod
     def _plural_form(initial_num, words):
+        return "%d %s" % (initial_num, SuitFilters._plural_word(initial_num, words))
+
+    @staticmethod
+    def _plural_word(initial_num, words):
         initial_num = initial_num if initial_num else 0
         if words:
             words = json.loads(words)

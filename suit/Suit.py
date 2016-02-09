@@ -1185,7 +1185,7 @@ class SuitFilters(object):
 
     @staticmethod
     def _plural_form(initial_num, words):
-        initial_num = initial_num if initial_num else 0
+        initial_num = int(initial_num) if initial_num else 0
         return "%d %s" % (initial_num, SuitFilters._plural_word(initial_num, words))
 
     @staticmethod
